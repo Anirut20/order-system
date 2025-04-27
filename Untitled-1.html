@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>ระบบสั่งซื้อสินค้า & Upload สลิป</title>
+    <style>
+        body { font-family: sans-serif; padding: 30px; background: #f7f7f7; }
+        h1     { color: #333; }
+        .row   { margin: 15px 0; }
+        label { display: inline-block; width: 120px; }
+        input, select, button { padding: 8px; }
+        button { background: #28a745; color: #fff; border: none; cursor: pointer; }
+        #message { margin-top: 20px; }
+    </style>
+</head>
+<body>
+
+    <h1>ระบบสั่งซื้อ & Upload สลิป</h1>
+
+    <div class="row">
+        <label for="productA">สินค้า A (100 บาท):</label>
+        <input type="number" id="productA" value="0" min="0">
+    </div>
+
+    <div class="row">
+        <label for="productB">สินค้า B (200 บาท):</label>
+        <input type="number" id="productB" value="0" min="0">
+    </div>
+
+    <div class="row">
+        <label for="productC">สินค้า C (300 บาท):</label>
+        <input type="number" id="productC" value="0" min="0">
+    </div>
+
+    <div class="row">
+        <label>ราคารวม:</label>
+        <span id="totalPrice">0</span> บาท
+    </div>
+
+    <div class="row">
+        <label for="paymentSlip">สลิปโอนเงิน:</label>
+        <input type="file" id="paymentSlip" accept="image/*">
+    </div>
+
+    <div class="row">
+        <label for="tableNumber">หมายเลขโต๊ะ:</label>
+        <input type="text" id="tableNumber" placeholder="เช่น โต๊ะ 5">
+    </div>
+
+    <button onclick="submitOrder()">ยืนยันการสั่งซื้อ</button>
+    <div id="message"></div>
+    <button id="resetBtn" onclick="resetForm()" style="display:none; margin-top:10px;">เริ่มรายการใหม่</button>
+
+    <script>
+        // คำนวณราคารวมเมื่อมีการเปลี่ยนแปลงจำนวนสินค้า
+        document.getElementById('productA').addEventListener('input', calcTotal);
+        document.getElementById('productB').addEventListener('input', calcTotal);
+        document.getElementById('productC').addEventListener('input', calcTotal);
+
+        function calcTotal() {
+            const qtyA = parseInt(document.getElementById('productA').value) || 0;
+            const qtyB = parseInt(document.getElementById('productB').value) || 0;
+            const qtyC = parseInt(document.getElementById('productC').value) || 0;
+            const total = (qtyA * 100) + (qtyB * 200) + (qtyC * 300);
+            document.getElementById('totalPrice').innerText = total;
+        }
+        calcTotal(); // เรียกครั้งแรก
+
+        function submitOrder() {
+            const productA = document.getElementById('productA').value;
+            const productB = document.getElementById('productB').value;
+            const productC = document.getElementById('productC').value;
+            const totalPrice = document.getElementById('totalPrice').innerText;
+            const tableNum = document.getElementById('tableNumber').value;
+            const fileInput = document.getElementById('paymentSlip');
+            const msgDiv = document.getElementById('message');
+
+            // ตรวจสอบข้อมูล
+            if (!tableNum) {
+                msgDiv.style.color = 'red';
+                msgDiv.innerText = 'กรุณาระบุหมายเลขโต๊ะ';
+                return;
+            }
+            if (fileInput.files.length === 0) {
+                msgDiv.style.color = 'red';
+                msgDiv.innerText = 'กรุณาอัพโหลดสลิปโอนเงิน';
+                return;
+            }
+
+            const payload = new FormData();
+            payload.append('productA', productA);
+            payload.append('productB', productB);
+            payload.append('productC', productC);
+            payload.append('totalPrice', totalPrice);
+            payload.append('tableNumber', tableNum);
+            payload.append('slip', fileInput.files[0]); // ส่ง File object โดยตรง
+
+            // เรียก Web App URL
+            fetch('https://script.google.com/macros/s/AKfycbwPjc4eNALB4PEl5AXkI_2-NksatvRT0MdCRyzZONTTh_fKEp-WirSFRts92ZusZ30Jjw/exec', {
+                method: 'POST',
+                body: payload
+            })
+            .then(res => res.json())
+            .then(json => {
+                if (json.status === 'success') {
+                    msgDiv.style.color = 'green';
+                    msgDiv.innerText = 'เสร็จสิ้นการทำงาน';
+                    document.getElementById('resetBtn').style.display = 'inline-block';
+                } else {
+                    msgDiv.style.color = 'red';
+                    msgDiv.innerText = 'Error: ' + (json.message || 'Unknown');
+                }
+            })
+            .catch(err => {
+                msgDiv.style.color = 'red';
+                msgDiv.innerText = 'Fetch error: ' + err;
+            });
+        }
+
+        function resetForm() {
+            document.getElementById('productA').value = 0;
+            document.getElementById('productB').value = 0;
+            document.getElementById('productC').value = 0;
+            calcTotal();
+            document.getElementById('paymentSlip').value = '';
+            document.getElementById('tableNumber').value = '';
+            document.getElementById('message').innerText = '';
+            document.getElementById('resetBtn').style.display = 'none';
+        }
+    </script>
+
+</body>
+</html>
