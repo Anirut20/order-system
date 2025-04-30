@@ -1,133 +1,210 @@
 <!DOCTYPE html>
 <html lang="th">
-<head>
-    <meta charset="UTF-8">
-    <title>ระบบสั่งซื้อสินค้า & Upload สลิป</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ฟอร์มบันทึกข้อมูล</title>
+    <link
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@7.12.15/dist/sweetalert2.all.min.js"></script>
     <style>
-        body { font-family: sans-serif; padding: 30px; background: #f7f7f7; }
-        h1     { color: #333; }
-        .row   { margin: 15px 0; }
-        label { display: inline-block; width: 120px; }
-        input, select, button { padding: 8px; }
-        button { background: #28a745; color: #fff; border: none; cursor: pointer; }
-        #message { margin-top: 20px; }
+      .form-container {
+        max-width: 500px;
+        margin: auto;
+        margin-top: 50px;
+        padding: 20px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        background-color: #fff;
+      }
     </style>
-</head>
-<body>
-
-    <h1>ระบบสั่งซื้อ & Upload สลิป</h1>
-
-    <div class="row">
-        <label for="productA">สินค้า A (100 บาท):</label>
-        <input type="number" id="productA" value="0" min="0">
+  </head>
+  <body class="bg-light">
+    <div class="container">
+      <div class="form-container">
+        <h4 class="text-center mb-4">ฟอร์มบันทึกข้อมูลลง Google Sheet</h4>
+        <form id="submit-to-google-sheet">
+          <div class="form-group">
+            <label for="table_number">หมายเลขโต๊ะ:</label>
+            <input
+              class="form-control"
+              type="text"
+              name="table_number"
+              id="table_number"
+              placeholder="กรุณากรอกหมายเลขโต๊ะ"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <label for="product1_qty">สินค้า 1 (ราคา: <span id="product1_price">20</span>): จำนวน:</label>
+            <input
+              class="form-control"
+              type="number"
+              name="product1_qty"
+              id="product1_qty"
+              placeholder="จำนวนสินค้า 1"
+              value="0"
+              min="0"
+            />
+          </div>
+          <div class="form-group">
+            <label for="product2_qty">สินค้า 2 (ราคา: <span id="product2_price">30</span>): จำนวน:</label>
+            <input
+              class="form-control"
+              type="number"
+              name="product2_qty"
+              id="product2_qty"
+              placeholder="จำนวนสินค้า 2"
+              value="0"
+              min="0"
+            />
+          </div>
+          <div class="form-group">
+            <label for="product3_qty">สินค้า 3 (ราคา: <span id="product3_price">50</span>): จำนวน:</label>
+            <input
+              class="form-control"
+              type="number"
+              name="product3_qty"
+              id="product3_qty"
+              placeholder="จำนวนสินค้า 3"
+              value="0"
+              min="0"
+            />
+          </div>
+          <div class="form-group">
+            <label for="total_price">ราคารวม:</label>
+            <input
+              class="form-control"
+              type="text"
+              name="total_price"
+              id="total_price"
+              value="0"
+              readonly
+            />
+          </div>
+          <div class="form-group">
+            <label for="slip">สลิปโอนเงิน:</label>
+            <input
+              class="form-control"
+              type="file"
+              name="slip"  id="slip"
+              accept="image/*"
+              required
+            />
+            <img id="slip_preview" src="#" alt="ตัวอย่างสลิป" style="max-width: 200px; max-height: 200px; margin-top: 10px; display: none;"/>
+          </div>
+          <div class="form-group form-check mt-2">
+             <input class="form-check-input" type="checkbox" id="confirm_order" name="confirm_order" required />
+            <label class="form-check-label" for="confirm_order">ยืนยันการสั่งซื้อ</label>
+          </div>
+          <button type="submit" class="btn btn-primary btn-block">
+            ส่งข้อมูล
+          </button>
+        </form>
+      </div>
     </div>
-
-    <div class="row">
-        <label for="productB">สินค้า B (200 บาท):</label>
-        <input type="number" id="productB" value="0" min="0">
-    </div>
-
-    <div class="row">
-        <label for="productC">สินค้า C (300 บาท):</label>
-        <input type="number" id="productC" value="0" min="0">
-    </div>
-
-    <div class="row">
-        <label>ราคารวม:</label>
-        <span id="totalPrice">0</span> บาท
-    </div>
-
-    <div class="row">
-        <label for="paymentSlip">สลิปโอนเงิน:</label>
-        <input type="file" id="paymentSlip" accept="image/*">
-    </div>
-
-    <div class="row">
-        <label for="tableNumber">หมายเลขโต๊ะ:</label>
-        <input type="text" id="tableNumber" placeholder="เช่น โต๊ะ 5">
-    </div>
-
-    <button onclick="submitOrder()">ยืนยันการสั่งซื้อ</button>
-    <div id="message"></div>
-    <button id="resetBtn" onclick="resetForm()" style="display:none; margin-top:10px;">เริ่มรายการใหม่</button>
 
     <script>
-        // คำนวณราคารวมเมื่อมีการเปลี่ยนแปลงจำนวนสินค้า
-        document.getElementById('productA').addEventListener('input', calcTotal);
-        document.getElementById('productB').addEventListener('input', calcTotal);
-        document.getElementById('productC').addEventListener('input', calcTotal);
+      // ===== URL ของคุณที่ใส่ให้แล้ว =====
+      const scriptURL = "https://script.google.com/macros/s/AKfycbws7cDNxwKmDqx_PURztTFRQCGAqIDij8_528VBby86o1gGoopkxAQzWHMswC9p_UZk0Q/exec";
+      // =================================
 
-        function calcTotal() {
-            const qtyA = parseInt(document.getElementById('productA').value) || 0;
-            const qtyB = parseInt(document.getElementById('productB').value) || 0;
-            const qtyC = parseInt(document.getElementById('productC').value) || 0;
-            const total = (qtyA * 100) + (qtyB * 200) + (qtyC * 300);
-            document.getElementById('totalPrice').innerText = total;
+      const form = document.getElementById("submit-to-google-sheet");
+      const slipInput = document.getElementById('slip');
+      const slipPreview = document.getElementById('slip_preview');
+      const product1Price = 20;
+      const product2Price = 30;
+      const product3Price = 50;
+
+      document.getElementById("product1_price").textContent = product1Price;
+      document.getElementById("product2_price").textContent = product2Price;
+      document.getElementById("product3_price").textContent = product3Price;
+      function calculateTotal() {
+        const product1Qty = parseInt(document.getElementById("product1_qty").value) || 0;
+        const product2Qty = parseInt(document.getElementById("product2_qty").value) || 0;
+        const product3Qty = parseInt(document.getElementById("product3_qty").value) || 0;
+        const total = product1Qty * product1Price + product2Qty * product2Price + product3Qty * product3Price;
+        document.getElementById("total_price").value = total;
+      }
+      document.getElementById("product1_qty").addEventListener("input", calculateTotal);
+      document.getElementById("product2_qty").addEventListener("input", calculateTotal);
+      document.getElementById("product3_qty").addEventListener("input", calculateTotal);
+      calculateTotal();
+
+      slipInput.addEventListener('change', function(event) {
+        const file = event.target.files[0];
+        if (file && file.type.startsWith('image/')) {
+          const reader = new FileReader();
+          reader.onload = function(e) {
+            slipPreview.src = e.target.result;
+            slipPreview.style.display = 'block';
+          }
+          reader.readAsDataURL(file);
+        } else {
+          slipPreview.src = '#';
+          slipPreview.style.display = 'none';
         }
-        calcTotal(); // เรียกครั้งแรก
+      });
 
-        function submitOrder() {
-            const productA = document.getElementById('productA').value;
-            const productB = document.getElementById('productB').value;
-            const productC = document.getElementById('productC').value;
-            const totalPrice = document.getElementById('totalPrice').innerText;
-            const tableNum = document.getElementById('tableNumber').value;
-            const fileInput = document.getElementById('paymentSlip');
-            const msgDiv = document.getElementById('message');
+      form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const file = slipInput.files[0];
+        if (!file) {
+           swal("เกิดข้อผิดพลาด", "กรุณาเลือกไฟล์สลิป", "error");
+           return;
+        }
+        const maxSizeMB = 10;
+        if (file.size > maxSizeMB * 1024 * 1024) {
+             swal("เกิดข้อผิดพลาด", `ไฟล์ต้องมีขนาดไม่เกิน ${maxSizeMB} MB`, "error");
+             return;
+        }
 
-            // ตรวจสอบข้อมูล
-            if (!tableNum) {
-                msgDiv.style.color = 'red';
-                msgDiv.innerText = 'กรุณาระบุหมายเลขโต๊ะ';
-                return;
-            }
-            if (fileInput.files.length === 0) {
-                msgDiv.style.color = 'red';
-                msgDiv.innerText = 'กรุณาอัพโหลดสลิปโอนเงิน';
-                return;
-            }
+        swal({ title: 'กำลังประมวลผล...', text: 'กรุณารอสักครู่ กำลังอ่านไฟล์...', showConfirmButton: false, allowOutsideClick: false });
+        const reader = new FileReader();
+        reader.onloadend = function() {
+          console.log("File Read Result (Base64 Data URL):", reader.result.substring(0, 100) + "...");
+          console.log("Original Filename:", file.name);
+          swal({ title: 'กำลังส่งข้อมูล...', text: 'กรุณารอสักครู่', showConfirmButton: false, allowOutsideClick: false });
 
-            const payload = new FormData();
-            payload.append('productA', productA);
-            payload.append('productB', productB);
-            payload.append('productC', productC);
-            payload.append('totalPrice', totalPrice);
-            payload.append('tableNumber', tableNum);
-            payload.append('slip', fileInput.files[0]); // ส่ง File object โดยตรง
+          var formData = new FormData();
+          formData.append('table_number', document.getElementById('table_number').value);
+          formData.append('product1_qty', document.getElementById('product1_qty').value);
+          formData.append('product2_qty', document.getElementById('product2_qty').value);
+          formData.append('product3_qty', document.getElementById('product3_qty').value);
+          formData.append('total_price', document.getElementById('total_price').value);
+          formData.append('confirm_order', document.getElementById('confirm_order').checked ? 'on' : '');
+          formData.append('fileName', file.name);
+          formData.append('fileData', reader.result);
 
-            // เรียก Web App URL
-            fetch('https://script.google.com/macros/s/AKfycbwPjc4eNALB4PEl5AXkI_2-NksatvRT0MdCRyzZONTTh_fKEp-WirSFRts92ZusZ30Jjw/exec', {
-                method: 'POST',
-                body: payload
+          fetch(scriptURL, { method: "POST", body: formData })
+            .then(response => response.json())
+            .then(data => {
+               console.log('Success:', data);
+               if(data.result === 'success'){
+                   // ข้อความตอนสำเร็จ (แบบสั้น)
+                   swal("สำเร็จ", "ทำรายการสำเร็จแล้ว", "success");
+                   form.reset();
+                   slipPreview.style.display = 'none';
+                   calculateTotal();
+               } else {
+                   swal("เกิดข้อผิดพลาด", data.error || "เกิดข้อผิดพลาดบางอย่าง กรุณาลองใหม่อีกครั้ง!", "error");
+               }
             })
-            .then(res => res.json())
-            .then(json => {
-                if (json.status === 'success') {
-                    msgDiv.style.color = 'green';
-                    msgDiv.innerText = 'เสร็จสิ้นการทำงาน';
-                    document.getElementById('resetBtn').style.display = 'inline-block';
-                } else {
-                    msgDiv.style.color = 'red';
-                    msgDiv.innerText = 'Error: ' + (json.message || 'Unknown');
-                }
-            })
-            .catch(err => {
-                msgDiv.style.color = 'red';
-                msgDiv.innerText = 'Fetch error: ' + err;
+            .catch(error => {
+              console.error('Error!', error.message);
+              swal("เกิดข้อผิดพลาด", "การเชื่อมต่อมีปัญหา กรุณาลองใหม่อีกครั้ง!", "error");
             });
         }
-
-        function resetForm() {
-            document.getElementById('productA').value = 0;
-            document.getElementById('productB').value = 0;
-            document.getElementById('productC').value = 0;
-            calcTotal();
-            document.getElementById('paymentSlip').value = '';
-            document.getElementById('tableNumber').value = '';
-            document.getElementById('message').innerText = '';
-            document.getElementById('resetBtn').style.display = 'none';
-        }
+        reader.onerror = function() {
+            console.error("FileReader error!");
+            swal("เกิดข้อผิดพลาด", "ไม่สามารถอ่านไฟล์ที่เลือกได้", "error");
+        };
+        reader.readAsDataURL(file);
+      });
     </script>
-
-</body>
+  </body>
 </html>
