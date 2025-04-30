@@ -4,7 +4,203 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Form with Bootstrap</title>
+    <link<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Form with Bootstrap</title>
     <link
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@7.12.15/dist/sweetalert2.all.min.js"></script>
+    <style>
+      .form-container {
+        max-width: 500px;
+        margin: auto;
+        margin-top: 50px;
+        padding: 20px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        background-color: #fff;
+      }
+    </style>
+  </head>
+  <body class="bg-light">
+    <div class="container">
+      <div class="form-container">
+        <h4 class="text-center mb-4">Form Submission to Google Sheet</h4>
+        <form id="submit-to-google-sheet">
+          <div class="form-group">
+            <label for="table_number">หมายเลขโต๊ะ:</label>
+            <input
+              class="form-control"
+              type="text"
+              name="table_number"
+              id="table_number"
+              placeholder="หมายเลขโต๊ะ"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <label for="product1_qty">สินค้า 1 (ราคา: <span id="product1_price">20</span>): จำนวน</label>
+            <input
+              class="form-control"
+              type="number"
+              name="product1_qty"
+              id="product1_qty"
+              placeholder="จำนวนสินค้า 1"
+              value="0"
+              min="0"
+            />
+          </div>
+          <div class="form-group">
+            <label for="product2_qty">สินค้า 2 (ราคา: <span id="product2_price">30</span>): จำนวน</label>
+            <input
+              class="form-control"
+              type="number"
+              name="product2_qty"
+              id="product2_qty"
+              placeholder="จำนวนสินค้า 2"
+              value="0"
+              min="0"
+            />
+          </div>
+          <div class="form-group">
+            <label for="product3_qty">สินค้า 3 (ราคา: <span id="product3_price">50</span>): จำนวน</label>
+            <input
+              class="form-control"
+              type="number"
+              name="product3_qty"
+              id="product3_qty"
+              placeholder="จำนวนสินค้า 3"
+              value="0"
+              min="0"
+            />
+          </div>
+          <div class="form-group">
+            <label for="total_price">ราคารวม:</label>
+            <input
+              class="form-control"
+              type="text"
+              name="total_price"
+              id="total_price"
+              value="0"
+              readonly
+            />
+          </div>
+          <div class="form-group">
+            <label for="slip">สลิปโอนเงิน:</label>
+            <input
+              class="form-control"
+              type="file"
+              name="slip"  id="slip"
+              accept="image/*"
+              required
+            />
+          </div>
+          <div class="form-group form-check mt-2">
+             <input class="form-check-input" type="checkbox" id="confirm_order" name="confirm_order" required />
+            <label class="form-check-label" for="confirm_order">ยืนยันการสั่งซื้อ</label>
+          </div>
+          <button type="submit" class="btn btn-primary btn-block">
+            Submit
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <script>
+      const scriptURL = "https://script.google.com/macros/s/AKfycbws7cDNxwKmDqx_PURztTFRQCGAqIDij8_528VBby86o1gGoopkxAQzWHMswC9p_UZk0Q/exec"; // <<-- ใส่ URL ใหม่ หลัง Deploy GAS อีกครั้ง!
+      const form = document.getElementById("submit-to-google-sheet"); // ใช้ getElementById ดีกว่า
+      const product1Price = 20;
+      const product2Price = 30;
+      const product3Price = 50;
+
+      // -- ส่วนคำนวณราคา เหมือนเดิม --
+      document.getElementById("product1_price").textContent = product1Price;
+      document.getElementById("product2_price").textContent = product2Price;
+      document.getElementById("product3_price").textContent = product3Price;
+      function calculateTotal() {
+        const product1Qty = parseInt(document.getElementById("product1_qty").value) || 0;
+        const product2Qty = parseInt(document.getElementById("product2_qty").value) || 0;
+        const product3Qty = parseInt(document.getElementById("product3_qty").value) || 0;
+        const total = product1Qty * product1Price + product2Qty * product2Price + product3Qty * product3Price;
+        document.getElementById("total_price").value = total;
+      }
+      document.getElementById("product1_qty").addEventListener("input", calculateTotal);
+      document.getElementById("product2_qty").addEventListener("input", calculateTotal);
+      document.getElementById("product3_qty").addEventListener("input", calculateTotal);
+      calculateTotal();
+
+      // --- แก้ไข Event Listener ---
+      form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        swal({ title: 'Processing...', text: 'Please wait while reading file...', showConfirmButton: false, allowOutsideClick: false });
+
+        const fileInput = document.getElementById('slip');
+        const file = fileInput.files[0];
+
+        // --- ตรวจสอบว่ามีไฟล์ถูกเลือกหรือไม่ ---
+        if (file) {
+          const reader = new FileReader();
+
+          // --- กำหนดสิ่งที่จะทำ *หลังจาก* อ่านไฟล์เสร็จ ---
+          reader.onloadend = function() {
+            // reader.result จะเป็น Base64 Data URL (เช่น data:image/jpeg;base64,...)
+            console.log("File Read Result (Base64 Data URL):", reader.result.substring(0, 100) + "..."); // แสดงแค่ส่วนต้นพอ
+            console.log("Original Filename:", file.name);
+
+            swal({ title: 'Submitting...', text: 'Please wait.', showConfirmButton: false, allowOutsideClick: false }); // อัปเดตสถานะ
+
+            // --- สร้าง FormData ด้วยตนเอง ---
+            var formData = new FormData();
+            formData.append('table_number', document.getElementById('table_number').value);
+            formData.append('product1_qty', document.getElementById('product1_qty').value);
+            formData.append('product2_qty', document.getElementById('product2_qty').value);
+            formData.append('product3_qty', document.getElementById('product3_qty').value);
+            formData.append('total_price', document.getElementById('total_price').value);
+            formData.append('confirm_order', document.getElementById('confirm_order').checked ? 'on' : ''); // ส่ง 'on' ถ้าติ๊ก
+
+            // --- เพิ่มข้อมูลไฟล์ Base64 และชื่อไฟล์ ---
+            formData.append('fileName', file.name);
+            formData.append('fileData', reader.result); // reader.result คือ Base64 Data URL
+
+            // --- ส่งข้อมูล ---
+            fetch(scriptURL, { method: "POST", body: formData })
+              .then(response => response.json())
+              .then(data => {
+                 console.log('Success:', data);
+                 if(data.result === 'success'){
+                     // ถ้าสำเร็จ ดู data.slipUrl ที่ GAS ส่งกลับมา
+                     swal("Done", "Submitted Successfully. File URL: " + (data.slipUrl || 'N/A'), "success");
+                     form.reset();
+                     calculateTotal();
+                 } else {
+                     swal("Error", data.error || "Something went wrong. Please try again!", "error");
+                 }
+              })
+              .catch(error => {
+                console.error('Error!', error.message);
+                swal("Error", "Something went wrong. Please check console or try again!", "error");
+              });
+          }
+
+          // --- สั่งให้อ่านไฟล์เป็น Base64 Data URL ---
+          // ส่วน onloadend ด้านบนจะทำงานเมื่ออ่านเสร็จ
+          reader.readAsDataURL(file);
+
+        } else {
+          // --- กรณีที่ไม่ได้เลือกไฟล์ (แต่ input เป็น required ไม่น่าเกิด) ---
+          swal("Error", "Please select a slip file.", "error");
+        }
+      });
+    </script>
+  </body>
+</html>
       href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
       rel="stylesheet"
     />
