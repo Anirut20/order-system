@@ -1,358 +1,495 @@
 <!DOCTYPE html>
 <html lang="th">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ฟอร์มบันทึกข้อมูล</title>
-    <link
-      href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@7.12.15/dist/sweetalert2.all.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>แผนการเรียนครุศาสตร์ไฟฟ้าหลักสูตร5ปีแขนงวิชาวิศวกรรมอิเล็กทรอนิกส์และโทรคมนาคม</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-      body {
-        font-family: 'Tahoma', sans-serif; /* ตัวอย่างการเปลี่ยน font */
-      }
-      .form-container {
-        max-width: 500px;
-        margin: auto;
-        margin-top: 30px; /* ลด margin-top ลงเล็กน้อย */
-        margin-bottom: 30px; /* เพิ่ม margin-bottom */
-        padding: 20px;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        background-color: #fff;
-        border-radius: 8px; /* เพิ่มความโค้งมนเล็กน้อย */
-      }
-      .form-container h4 {
-        font-size: 1.6rem; /* ปรับขนาดหัวข้อ */
-        font-weight: bold;
-        color: #333;
-      }
-      .form-group label,
-      .form-group .form-check-label,
-      .form-group p.mb-0 {
-        font-size: 0.9rem; /* ปรับขนาด label และข้อความ */
-        color: #555;
-      }
-      .form-control {
-        font-size: 0.9rem;
-      }
-      #grand_total_price {
-        font-size: 1.15rem; /* ปรับขนาดราคารวมสุทธิ */
-        font-weight: bold;
-        color: #dc3545; /* เปลี่ยนเป็นสีแดง */
-      }
-      #qr_code_payment_section p {
-        font-size: 0.85rem; /* ปรับขนาดข้อความในส่วน QR */
-      }
-      #qr_code_payment_section strong {
-        font-size: 1rem;
-      }
-      .slip-section, .qr-code-section {
-        display: none; /* เริ่มต้นให้ซ่อน */
-      }
-      #qr_code_image {
-        max-width: 220px; /* ปรับขนาด QR Code */
-        height: auto;
-        margin-top: 5px;
-        border: 1px solid #ddd;
-        padding: 5px;
-      }
-      .download-qr-btn {
-        margin-top: 10px; /* ปรับ margin ปุ่มดาวน์โหลด */
-        font-size: 0.8rem;
-      }
-      .btn-primary { /* ปรับปุ่มหลัก */
-          font-size: 1rem;
-      }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .flowchart-container {
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            width: 100%;
+            max-width: 800px; /* Adjust max-width for single column view */
+            overflow-x: hidden; /* Hide horizontal scrollbar */
+            position: relative;
+        }
+        .semester-display {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            min-height: 400px; /* Ensure enough height for content */
+            justify-content: flex-start;
+            align-items: center;
+        }
+        .semester-title {
+            font-weight: 700;
+            color: #333;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 1.5em; /* Larger for single semester view */
+        }
+        .course-card {
+            background-color: #e3f2fd; /* Light blue */
+            border: 1px solid #90caf9; /* Medium blue */
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 0.9em;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            cursor: pointer; /* Change cursor to pointer to indicate clickability */
+            word-wrap: break-word; /* Ensure text wraps */
+            width: 95%; /* Make cards take more width in single column */
+            max-width: 350px; /* Max width for cards */
+        }
+        .course-card.core {
+            background-color: #ffe0b2; /* Light orange */
+            border-color: #ffb74d; /* Medium orange */
+        }
+        .course-card.major {
+            background-color: #c8e6c9; /* Light green */
+            border-color: #81c784; /* Medium green */
+        }
+        .course-card.elective {
+            background-color: #f8bbd0; /* Light pink */
+            border-color: #f06292; /* Medium pink */
+        }
+        .course-card.practice {
+            background-color: #d1c4e9; /* Light purple */
+            border-color: #9575cd; /* Medium purple */
+        }
+        /* Highlight for English-taught courses */
+        .course-card.english-taught {
+            border: 2px solid #3b82f6; /* A prominent blue border */
+            box-shadow: 0 0 8px rgba(59, 130, 246, 0.7); /* A blue glow */
+        }
+
+        .unit-credit {
+            font-size: 0.8em;
+            color: #555;
+            margin-top: 5px;
+            display: block;
+        }
+        .subject-type-label {
+            display: flex;
+            justify-content: center; /* Center labels */
+            margin-bottom: 25px;
+            gap: 15px;
+            flex-wrap: wrap;
+            text-align: center;
+        }
+        .label-item {
+            display: flex;
+            align-items: center;
+            font-size: 0.85em;
+            color: #555;
+        }
+        .label-color {
+            width: 18px;
+            height: 18px;
+            border-radius: 4px;
+            margin-right: 8px;
+            border: 1px solid;
+        }
+
+        /* Modal Styles */
+        .modal {
+            background-color: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+        }
+        .modal-content {
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .flowchart-container {
+                padding: 15px;
+                max-width: 100%;
+            }
+            .semester-title {
+                font-size: 1.3em;
+            }
+            .course-card {
+                padding: 10px;
+                font-size: 0.8em;
+                width: 100%;
+            }
+            .unit-credit {
+                font-size: 0.7em;
+            }
+            .subject-type-label {
+                gap: 10px;
+                margin-bottom: 20px;
+            }
+            .label-item {
+                font-size: 0.8em;
+            }
+            .label-color {
+                width: 16px;
+                height: 16px;
+            }
+            button {
+                padding: 10px 18px;
+                font-size: 0.9em;
+            }
+            select {
+                padding: 8px 12px;
+                font-size: 0.9em;
+            }
+        }
     </style>
-  </head>
-  <body class="bg-light">
-    <div class="container">
-      <div class="form-container">
-        <h4 class="text-center mb-4">บริการซื้อเครื่องดื่ม</h4>
-        <form id="submit-to-google-sheet">
-          <div class="form-group">
-            <label for="table_number">หมายเลขโต๊ะ/ชื่อผู้สั่ง:</label>
-            <input
-              class="form-control"
-              type="text"
-              name="table_number"
-              id="table_number"
-              placeholder="กรุณากรอกหมายเลขโต๊ะ หรือ ชื่อ"
-              required
-            />
-          </div>
-          <div class="form-group">
-            <label for="product1_qty">เบียร์ช้างกระป๋องเล็ก 320ml (ราคา: <span id="product1_price_display">45</span>):</label>
-            <input class="form-control product-qty" type="number" name="product1_qty" id="product1_qty" placeholder="จำนวน" value="0" min="0"/>
-          </div>
-          <div class="form-group">
-            <label for="product2_qty">เบียร์สิงห์กระป๋องเล็ก 320ml (ราคา: <span id="product2_price_display">45</span>):</label>
-            <input class="form-control product-qty" type="number" name="product2_qty" id="product2_qty" placeholder="จำนวน" value="0" min="0"/>
-          </div>
-          <div class="form-group">
-            <label for="product3_qty">เบียร์ลีโอกระป๋องเล็ก 320ml (ราคา: <span id="product3_price_display">45</span>):</label>
-            <input class="form-control product-qty" type="number" name="product3_qty" id="product3_qty" placeholder="จำนวน" value="0" min="0"/>
-          </div>
-          <div class="form-group">
-            <label for="product4_qty">แสงโสมแบน (ราคา: <span id="product4_price_display">170</span>):</label>
-            <input class="form-control product-qty" type="number" name="product4_qty" id="product4_qty" placeholder="จำนวน" value="0" min="0"/>
-          </div>
-          <div class="form-group">
-            <label for="product5_qty">รีเจนซี่แบน (ราคา: <span id="product5_price_display">470</span>):</label>
-            <input class="form-control product-qty" type="number" name="product5_qty" id="product5_qty" placeholder="จำนวน" value="0" min="0"/>
-          </div>
-          <div class="form-group">
-            <label for="product6_qty">สมทบทุนสโมสรนักศึกษา (ราคา: <span id="product6_price_display">10</span>):</label>
-            <input class="form-control product-qty" type="number" name="product6_qty" id="product6_qty" placeholder="จำนวน" value="0" min="0"/>
-          </div>
+</head>
+<body>
+    <div class="flowchart-container">
+        <h1 class="text-3xl font-bold text-center text-gray-800 mb-8">แผนการเรียนครุศาสตร์ไฟฟ้าหลักสูตร5ปีแขนงวิชาวิศวกรรมอิเล็กทรอนิกส์และโทรคมนาคม</h1>
 
+        <div class="subject-type-label">
+            <div class="label-item"><span class="label-color bg-e3f2fd border-blue-400"></span> หมวดวิชาศึกษาทั่วไป</div>
+            <div class="label-item"><span class="label-color bg-ffe0b2 border-orange-400"></span> วิชาบังคับ (พื้นฐานวิศวกรรม)</div>
+            <div class="label-item"><span class="label-color bg-c8e6c9 border-green-400"></span> วิชาบังคับ (เฉพาะแขนง)</div>
+            <div class="label-item"><span class="label-color bg-f8bbd0 border-pink-400"></span> วิชาเลือก</div>
+            <div class="label-item"><span class="label-color bg-d1c4e9 border-purple-400"></span> ปฏิบัติการสอน / โครงงาน</div>
+            <div class="label-item"><span class="label-color border-blue-600 shadow-[0_0_8px_rgba(59,130,246,0.7)]"></span> วิชาสอนเป็นภาษาอังกฤษ</div>
+        </div>
 
-          <div class="form-group">
-            <label for="total_price">ราคารวมสินค้า:</label>
-            <input class="form-control" type="text" name="total_price" id="total_price" value="0" readonly />
-          </div>
+        <div id="semesterDisplay" class="semester-display">
+            <!-- Semester content will be rendered here by JavaScript -->
+        </div>
 
-          <div class="form-group">
-              <p class="mb-0">ค่าหิ้ว: <span id="shipping_cost_display">100</span> บาท</p>
-          </div>
-
-          <div class="form-group">
-              <label for="grand_total_price">ราคารวมสุทธิ (รวมค่าหิ้ว):</label>
-              <input class="form-control" type="text" name="grand_total_price" id="grand_total_price" value="0" readonly />
-          </div>
-
-          <div class="form-group">
-            <label for="payment_method">วิธีการชำระเงิน:</label>
-            <select class="form-control" id="payment_method" name="payment_method" required>
-              <option value="">-- เลือกวิธีการชำระเงิน --</option>
-              <option value="transfer">โอนเงิน (สแกน QR / แนบสลิป)</option>
-              <option value="cash">ชำระเงินสด</option>
+        <div class="flex flex-col items-center gap-4 mt-8">
+            <select id="semesterSelect" class="px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <!-- Options will be populated by JavaScript -->
             </select>
-          </div>
-
-          <div class="form-group qr-code-section" id="qr_code_payment_section">
-            <p class="text-center font-weight-bold">สแกน QR Code เพื่อชำระเงิน</p>
-            <div class="text-center">
-                <img id="qr_code_image" src="ANIRUTQR.png" alt="QR Code สำหรับชำระเงิน"/>
-                <p id="qr_amount_note" class="mt-2">ยอดชำระ: <strong id="qr_amount_display">0</strong> บาท<br>(กรุณากรอกยอดนี้ในแอปธนาคารของท่าน)</p>
-                <a id="download_qr_link" href="ANIRUTQR.png" download="ANIRUTQR_Payment.png" class="btn btn-info btn-sm download-qr-btn">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-download" viewBox="0 0 16 16">
-                        <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
-                        <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/>
-                    </svg>
-                    ดาวน์โหลด QR Code
-                </a>
+            <div class="flex justify-center gap-4 w-full max-w-sm">
+                <button id="prevBtn" class="flex-1 px-6 py-3 bg-gray-300 text-gray-800 rounded-lg shadow-md hover:bg-gray-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                    เทอมก่อนหน้า
+                </button>
+                <button id="nextBtn" class="flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg shadow-md hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                    เทอมถัดไป
+                </button>
             </div>
-            <p class="text-center mt-3">หลังจากชำระเงินแล้ว กรุณาแนบสลิปด้านล่าง</p>
-          </div>
+        </div>
 
+        <!-- Course Details Modal -->
+        <div id="courseModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-50 hidden modal">
+            <div class="bg-white p-8 rounded-lg shadow-xl max-w-lg w-full m-4 relative modal-content">
+                <button id="closeModalBtn" class="absolute top-3 right-3 text-gray-500 hover:text-gray-700 text-2xl font-bold">&times;</button>
+                <h2 id="modalCourseTitle" class="text-2xl font-bold mb-2 text-center text-gray-800"></h2>
+                <p id="modalCourseEnglishTitle" class="text-gray-600 italic mb-4 text-center"></p>
+                <p id="modalCourseUnits" class="text-gray-600 mb-6 text-center"></p>
 
-          <div class="form-group slip-section" id="slip_upload_section">
-            <label for="slip">สลิปโอนเงิน:</label>
-            <input class="form-control" type="file" name="slip" id="slip" accept="image/*" />
-            <img id="slip_preview" src="#" alt="ตัวอย่างสลิป" style="max-width: 200px; max-height: 200px; margin-top: 10px; display: none;"/>
-          </div>
+                <div id="modalPrerequisites" class="mb-4">
+                    <h3 class="text-lg font-semibold text-gray-700 border-b pb-2 mb-2">วิชาที่ต้องผ่านก่อนหน้า:</h3>
+                    <ul id="prereqList" class="list-disc list-inside text-gray-600 pl-4">
+                        <!-- Prereq courses will be listed here -->
+                    </ul>
+                    <p id="noPrereqs" class="text-gray-500 italic hidden">ไม่มีวิชาที่ต้องผ่านก่อนหน้าระบุไว้</p>
+                </div>
 
-          <div class="form-group form-check mt-2">
-            <input class="form-check-input" type="checkbox" id="confirm_order_final" name="confirm_order_final" required />
-            <label class="form-check-label" for="confirm_order_final">ยืนยันการสั่งซื้อ</label>
-          </div>
+                <div id="modalSubsequentCourses">
+                    <h3 class="text-lg font-semibold text-gray-700 border-b pb-2 mb-2">วิชาที่ต่อเนื่อง:</h3>
+                    <ul id="subsequentList" class="list-disc list-inside text-gray-600 pl-4">
+                        <!-- Subsequent courses will be listed here -->
+                    </ul>
+                    <p id="noSubsequent" class="text-gray-500 italic hidden">ไม่มีวิชาต่อเนื่องระบุไว้</p>
+                </div>
+            </div>
+        </div>
 
-          <button type="submit" class="btn btn-primary btn-block">
-            ส่งข้อมูล
-          </button>
-        </form>
-      </div>
-    </div>
-
-    <script>
-      const scriptURL = "https://script.google.com/macros/s/AKfycbws7cDNxwKmDqx_PURztTFRQCGAqIDij8_528VBby86o1gGoopkxAQzWHMswC9p_UZk0Q/exec"; // URL Apps Script ของคุณ
-      const form = document.getElementById("submit-to-google-sheet");
-      const slipInput = document.getElementById('slip');
-      const slipPreview = document.getElementById('slip_preview');
-      const slipUploadSection = document.getElementById('slip_upload_section');
-      const paymentMethodSelect = document.getElementById('payment_method');
-      const qrCodePaymentSection = document.getElementById('qr_code_payment_section');
-      const qrAmountDisplay = document.getElementById('qr_amount_display');
-      const qrCodeImage = document.getElementById('qr_code_image');
-      const downloadQrLink = document.getElementById('download_qr_link');
-
-      const qrCodeFileName = "ANIRUTQR.png"; // ชื่อไฟล์ QR Code ของคุณ
-
-      qrCodeImage.src = qrCodeFileName;
-      downloadQrLink.href = qrCodeFileName;
-      downloadQrLink.setAttribute('download', 'ANIRUTQR_Payment.png');
-
-      const shippingCost = 100; // ค่าหิ้ว
-      document.getElementById("shipping_cost_display").textContent = shippingCost;
-
-      const productPrices = {
-          product1: 45,
-          product2: 45,
-          product3: 45,
-          product4: 170,
-          product5: 470,
-          product6: 10
-      };
-
-      document.getElementById("product1_price_display").textContent = productPrices.product1;
-      document.getElementById("product2_price_display").textContent = productPrices.product2;
-      document.getElementById("product3_price_display").textContent = productPrices.product3;
-      document.getElementById("product4_price_display").textContent = productPrices.product4;
-      document.getElementById("product5_price_display").textContent = productPrices.product5;
-      document.getElementById("product6_price_display").textContent = productPrices.product6;
-
-      function calculateTotal() {
-        const product1Qty = parseInt(document.getElementById("product1_qty").value) || 0;
-        const product2Qty = parseInt(document.getElementById("product2_qty").value) || 0;
-        const product3Qty = parseInt(document.getElementById("product3_qty").value) || 0;
-        const product4Qty = parseInt(document.getElementById("product4_qty").value) || 0;
-        const product5Qty = parseInt(document.getElementById("product5_qty").value) || 0;
-        const product6Qty = parseInt(document.getElementById("product6_qty").value) || 0;
-
-        const subTotal = (product1Qty * productPrices.product1) +
-                      (product2Qty * productPrices.product2) +
-                      (product3Qty * productPrices.product3) +
-                      (product4Qty * productPrices.product4) +
-                      (product5Qty * productPrices.product5) +
-                      (product6Qty * productPrices.product6);
-        const grandTotal = subTotal + shippingCost;
-        document.getElementById("total_price").value = subTotal;
-        document.getElementById("grand_total_price").value = grandTotal;
-        qrAmountDisplay.textContent = grandTotal;
-      }
-
-      document.querySelectorAll(".product-qty").forEach(input => {
-          input.addEventListener("input", calculateTotal);
-      });
-      calculateTotal();
-
-      function updatePaymentMethodUI() {
-        const selectedMethod = paymentMethodSelect.value;
-        if (selectedMethod === 'cash') {
-          slipUploadSection.style.display = 'none';
-          qrCodePaymentSection.style.display = 'none';
-          slipInput.removeAttribute('required');
-          slipInput.value = null;
-          slipPreview.src = '#';
-          slipPreview.style.display = 'none';
-        } else if (selectedMethod === 'transfer') {
-          slipUploadSection.style.display = 'block';
-          qrCodePaymentSection.style.display = 'block';
-          slipInput.setAttribute('required', 'required');
-        } else { // กรณี "-- เลือกวิธีการชำระเงิน --"
-          slipUploadSection.style.display = 'none';
-          qrCodePaymentSection.style.display = 'none';
-          slipInput.removeAttribute('required');
-        }
-      }
-
-      paymentMethodSelect.addEventListener('change', updatePaymentMethodUI);
-      updatePaymentMethodUI(); // เรียกครั้งแรกเพื่อให้ UI ถูกต้องตามค่าเริ่มต้น
-
-
-      slipInput.addEventListener('change', function(event) {
-        const file = event.target.files[0];
-        if (file && file.type.startsWith('image/')) {
-          const reader = new FileReader();
-          reader.onload = function(e) {
-            slipPreview.src = e.target.result;
-            slipPreview.style.display = 'block';
-          }
-          reader.readAsDataURL(file);
-        } else {
-          slipPreview.src = '#';
-          slipPreview.style.display = 'none';
-        }
-      });
-
-      form.addEventListener("submit", (e) => {
-        e.preventDefault();
-        const selectedPaymentMethod = paymentMethodSelect.value;
-        const file = slipInput.files[0];
-
-        if (selectedPaymentMethod === '') {
-            swal("เกิดข้อผิดพลาด", "กรุณาเลือกวิธีการชำระเงิน", "error");
-            return;
-        }
-
-        if (selectedPaymentMethod === 'transfer' && !file) {
-            swal("เกิดข้อผิดพลาด", "กรุณาแนบสลิปสำหรับวิธีการชำระเงินแบบโอนเงิน", "error");
-            return;
-        }
-        if (selectedPaymentMethod === 'transfer' && file) {
-            const maxSizeMB = 10;
-            if (file.size > maxSizeMB * 1024 * 1024) {
-                swal("เกิดข้อผิดพลาด", `ไฟล์ต้องมีขนาดไม่เกิน ${maxSizeMB} MB`, "error");
-                return;
-            }
-        }
-
-        swal({ title: 'กำลังประมวลผล...', text: 'กรุณารอสักครู่...', showConfirmButton: false, allowOutsideClick: false });
-
-        const proceedWithSubmission = (base64FileData = null, originalFileName = null) => {
-            var formData = new FormData();
-            formData.append('table_number', document.getElementById('table_number').value);
-            formData.append('product1_qty', document.getElementById('product1_qty').value);
-            formData.append('product2_qty', document.getElementById('product2_qty').value);
-            formData.append('product3_qty', document.getElementById('product3_qty').value);
-            formData.append('product4_qty', document.getElementById('product4_qty').value);
-            formData.append('product5_qty', document.getElementById('product5_qty').value);
-            formData.append('product6_qty', document.getElementById('product6_qty').value);
-            formData.append('total_price', document.getElementById('total_price').value);
-            formData.append('shipping_cost', shippingCost.toString());
-            formData.append('grand_total_price', document.getElementById('grand_total_price').value);
-            formData.append('payment_method', selectedPaymentMethod);
-            formData.append('confirm_order_final', document.getElementById('confirm_order_final').checked ? 'on' : '');
-
-            if (base64FileData && originalFileName) {
-                formData.append('fileName', originalFileName);
-                formData.append('fileData', base64FileData);
-            } else {
-                formData.append('fileName', '');
-                formData.append('fileData', '');
-            }
-
-            fetch(scriptURL, { method: "POST", body: formData })
-                .then(response => response.json())
-                .then(data => {
-                if(data.result === 'success'){
-                    swal("สำเร็จ", "ทำรายการสำเร็จแล้ว (Order #: " + data.orderNumber + ")", "success");
-                    form.reset();
-                    slipPreview.style.display = 'none';
-                    // Reset payment method UI to initial state
-                    paymentMethodSelect.value = ""; // กลับไปที่ "-- เลือกวิธีการชำระเงิน --"
-                    updatePaymentMethodUI(); // เรียกเพื่อให้ UI ซ่อนส่วนที่ไม่จำเป็น
-                    calculateTotal();
-                } else {
-                    swal("เกิดข้อผิดพลาด", data.error || "เกิดข้อผิดพลาดบางอย่าง กรุณาลองใหม่อีกครั้ง!", "error");
+        <script>
+            // Data for all semesters and their courses
+            const allSemestersData = [
+                // Year 1, Semester 1
+                {
+                    title: "ปี 1 เทอม 1",
+                    courses: [
+                        { id: "020023221", name: "หลักวิชาชีพครู", englishName: "Teaching Profession", units: "3(3-0-6)", type: "major", isEnglishTaught: false, prerequisites: [], subsequentCourses: [] },
+                        { id: "020253001*", name: "การเขียนแบบวิศวกรรม", englishName: "Engineering Drawing", units: "3(2-2-5)", type: "core", isEnglishTaught: true, prerequisites: [], subsequentCourses: [] },
+                        { id: "020253008", name: "การวัดและเครื่องมือวัดทางไฟฟ้า", englishName: "Electrical Instrumentation and Measurement", units: "3(3-0-6)", type: "core", isEnglishTaught: false, prerequisites: [], subsequentCourses: [{ id: "020253009", name: "ปฏิบัติการวัดและเครื่องมือวัดทางไฟฟ้า", englishName: "Electrical Instrumentation and Measurement Laboratory" }] },
+                        { id: "040113001", name: "เคมีสำหรับวิศวกร", englishName: "Chemistry for Engineers", units: "3(3-0-6)", type: "core", isEnglishTaught: false, prerequisites: [], subsequentCourses: [{ id: "040113002", name: "ปฏิบัติการเคมีสำหรับวิศวกร", englishName: "Chemistry Laboratory for Engineers" }] },
+                        { id: "040313005", name: "ฟิสิกส์ 1", englishName: "Physics 1", units: "3(3-0-6)", type: "core", isEnglishTaught: false, prerequisites: [], subsequentCourses: [{ id: "040313006", name: "ปฏิบัติการฟิสิกส์ 1", englishName: "Physics Laboratory 1" }] },
+                        { id: "040313006", name: "ปฏิบัติการฟิสิกส์ 1", englishName: "Physics Laboratory 1", units: "1(0-2-1)", type: "core", isEnglishTaught: false, prerequisites: [{ id: "040313005", name: "ฟิสิกส์ 1", englishName: "Physics 1" }], subsequentCourses: [] },
+                        { id: "040203111", name: "คณิตศาสตร์วิศวกรรม 1", englishName: "Engineering Mathematics I", units: "3(3-0-6)", type: "core", isEnglishTaught: false, prerequisites: [], subsequentCourses: [{ id: "040203112", name: "คณิตศาสตร์วิศวกรรม 2", englishName: "Engineering Mathematics II" }] },
+                        { id: "080103001", name: "ภาษาอังกฤษ 1", englishName: "English 1", units: "3(3-0-6)", type: "general", isEnglishTaught: false, prerequisites: [], subsequentCourses: [{ id: "080103002", name: "ภาษาอังกฤษ 2", englishName: "English II" }] }
+                    ]
+                },
+                // Year 1, Semester 2
+                {
+                    title: "ปี 1 เทอม 2",
+                    courses: [
+                        { id: "020023228", name: "การวัดและการประเมินผลการศึกษา", englishName: "Educational Measurement and Evaluation", units: "3(2-2-5)", type: "major", isEnglishTaught: false, prerequisites: [], subsequentCourses: [{ id: "020023231", name: "ฝึกปฏิบัติการสอน 2", englishName: "Teaching Practice II" }] },
+                        { id: "020003101", name: "คอมพิวเตอร์เพื่อการศึกษาเบื้องต้น", englishName: "Basic Computer for Education", units: "1(1-1-2)", type: "general", isEnglishTaught: false, prerequisites: [], subsequentCourses: [] },
+                        { id: "020253009", name: "ปฏิบัติการวัดและเครื่องมือวัดทางไฟฟ้า", englishName: "Electrical Instrumentation and Measurement Laboratory", units: "1(0-3-1)", type: "core", isEnglishTaught: false, prerequisites: [{ id: "020253008", name: "การวัดและเครื่องมือวัดทางไฟฟ้า", englishName: "Electrical Instrumentation and Measurement" }], subsequentCourses: [] },
+                        { id: "020253013", name: "ปฏิบัติงานวิศวกรรมไฟฟ้าเบื้องต้น", englishName: "Basic Electrical Engineering Practice", units: "3(0-6-3)", type: "core", isEnglishTaught: false, prerequisites: [], subsequentCourses: [] },
+                        { id: "020253021", name: "เทคโนโลยีการสื่อสาร", englishName: "Communication Technology", units: "3(3-0-6)", type: "core", isEnglishTaught: false, prerequisites: [], subsequentCourses: [{ id: "020253424", name: "การสื่อสารข้อมูลและเครือข่ายคอมพิวเตอร์", englishName: "Data Communication and Computer Networks" }] },
+                        { id: "040113002", name: "ปฏิบัติการเคมีสำหรับวิศวกร", englishName: "Chemistry Laboratory for Engineers", units: "1(0-3-1)", type: "core", isEnglishTaught: false, prerequisites: [{ id: "040113001", name: "เคมีสำหรับวิศวกร", englishName: "Chemistry for Engineers" }], subsequentCourses: [] },
+                        { id: "040203112", name: "คณิตศาสตร์วิศวกรรม 2", englishName: "Engineering Mathematics II", units: "3(3-0-6)", type: "core", isEnglishTaught: false, prerequisites: [{ id: "040203111", name: "คณิตศาสตร์วิศวกรรม 1", englishName: "Engineering Mathematics I" }], subsequentCourses: [{ id: "020253000", name: "คณิตศาสตร์วิศวกรรมไฟฟ้า", englishName: "Electrical Engineering Mathematics" }, { id: "020253004*", name: "วงจรไฟฟ้า", englishName: "Electric Circuits" }] },
+                        { id: "080103002", name: "ภาษาอังกฤษ 2", englishName: "English II", units: "3(3-0-6)", type: "general", isEnglishTaught: false, prerequisites: [{ id: "080103001", name: "ภาษาอังกฤษ 1", englishName: "English 1" }], subsequentCourses: [] }, // Removed specific subsequent as electives are flexible.
+                        { id: "08XXXXXXX", name: "วิชาเลือกในกลุ่มวิชากีฬาและนันทนาการ", englishName: "Sport and Recreation Elective Course", units: "1(x-x-x)", type: "elective", isEnglishTaught: false, prerequisites: [], subsequentCourses: [] }
+                    ]
+                },
+                // Year 2, Semester 1
+                {
+                    title: "ปี 2 เทอม 1",
+                    courses: [
+                        { id: "020003103*", name: "คอมพิวเตอร์และการโปรแกรม", englishName: "Computer and Programming", units: "3(2-2-5)", type: "general", isEnglishTaught: true, prerequisites: [], subsequentCourses: [] },
+                        { id: "020023227", name: "นวัตกรรมและสื่อดิจิทัลเพื่อการเรียนการสอน", englishName: "Innovations and Digital Instructional Media", units: "3(2-2-5)", type: "major", isEnglishTaught: false, prerequisites: [], subsequentCourses: [{ id: "020023230", name: "ฝึกปฏิบัติการสอน 1", englishName: "Teaching Practice 1" }] },
+                        { id: "020253000", name: "คณิตศาสตร์วิศวกรรมไฟฟ้า", englishName: "Electrical Engineering Mathematics", units: "3(3-0-6)", type: "core", isEnglishTaught: false, prerequisites: [{ id: "040203112", name: "คณิตศาสตร์วิศวกรรม 2", englishName: "Engineering Mathematics II" }], subsequentCourses: [{ id: "020253006*", name: "สนามแม่เหล็กไฟฟ้า", englishName: "Electromagnetic Fields" }, { id: "020253022*", name: "สัญญาณและระบบ", englishName: "Signal and System" }] },
+                        { id: "020253002", name: "กลศาสตร์วิศวกรรม", englishName: "Engineering Mechanics", units: "3(3-0-6)", type: "core", isEnglishTaught: false, prerequisites: [], subsequentCourses: [] },
+                        { id: "020253003", name: "วัสดุวิศวกรรม", englishName: "Engineering Materials", units: "3(3-0-6)", type: "core", isEnglishTaught: false, prerequisites: [], subsequentCourses: [] },
+                        { id: "020253004*", name: "วงจรไฟฟ้า", englishName: "Electric Circuits", units: "3(3-0-6)", type: "core", isEnglishTaught: true, prerequisites: [{ id: "040203112", name: "คณิตศาสตร์วิศวกรรม 2", englishName: "Engineering Mathematics II" }], subsequentCourses: [] },
+                        { id: "020253019*", name: "อุปกรณ์อิเล็กทรอนิกส์และวงจรแอนะล็อก", englishName: "Electronic Devices and Analog Circuits", units: "3(3-0-6)", type: "core", isEnglishTaught: true, prerequisites: [], subsequentCourses: [{ id: "020253418", name: "วิศวกรรมอิเล็กทรอนิกส์ขั้นสูง", englishName: "Advanced Electronic Engineering" }, { id: "020253419", name: "การออกแบบวงจรอิเล็กทรอนิกส์", englishName: "Electronic Circuit Design" }] },
+                        { id: "08XXXXXXX", name: "วิชาเลือกในกลุ่มวิชากีฬาและนันทนาการ", englishName: "Sport and Recreation Elective Course", units: "1(x-x-x)", type: "elective", isEnglishTaught: false, prerequisites: [], subsequentCourses: [] }
+                    ]
+                },
+                // Year 2, Semester 2
+                {
+                    title: "ปี 2 เทอม 2",
+                    courses: [
+                        { id: "020023223", name: "ภาษาและวัฒนธรรมเพื่อวิชาชีพครู", englishName: "Language and Cultures for Teaching Profession", units: "3(3-0-6)", type: "major", isEnglishTaught: false, prerequisites: [], subsequentCourses: [] },
+                        { id: "020023225", name: "วิธีการสอนอาชีวศึกษา", englishName: "Teaching Methods in Vocational Education", units: "3(2-2-5)", type: "major", isEnglishTaught: false, prerequisites: [], subsequentCourses: [{ id: "020023230", name: "ฝึกปฏิบัติการสอน 1", englishName: "Teaching Practice 1" }] },
+                        { id: "020253006*", name: "สนามแม่เหล็กไฟฟ้า", englishName: "Electromagnetic Fields", units: "3(3-0-6)", type: "core", isEnglishTaught: true, prerequisites: [{ id: "020253000", name: "คณิตศาสตร์วิศวกรรมไฟฟ้า", englishName: "Electrical Engineering Mathematics" }], subsequentCourses: [{ id: "020253311*", name: "คลื่นแม่เหล็กไฟฟ้า", englishName: "Electromagnetic Wave" }] },
+                        { id: "020253007", name: "ระบบควบคุม", englishName: "Control Systems", units: "3(3-0-6)", type: "core", isEnglishTaught: false, prerequisites: [], subsequentCourses: [{ id: "020253016", name: "ปฏิบัติการระบบควบคุม", englishName: "Control System Laboratory" }] },
+                        { id: "020253022*", name: "สัญญาณและระบบ", englishName: "Signal and System", units: "3(3-0-6)", type: "core", isEnglishTaught: true, prerequisites: [{ id: "020253000", name: "คณิตศาสตร์วิศวกรรมไฟฟ้า", englishName: "Electrical Engineering Mathematics" }], subsequentCourses: [{ id: "020253310*", name: "หลักการการสื่อสาร", englishName: "Principles of Communications" }] },
+                        { id: "020253023*", name: "ระบบสมองกลฝังตัวและอินเทอร์เน็ตสรรพสิ่ง", englishName: "Embedded System and IoT", units: "3(2-2-5)", type: "core", isEnglishTaught: true, prerequisites: [], subsequentCourses: [{ id: "020253425", name: "การออกแบบวงจรรวมและประยุกต์ใช้งานวงจรรวมลอจิกและดิจิทัล", englishName: "Digital and Logic Integrated Circuit Design and Application" }] },
+                        { id: "08XXXXXXX", name: "วิชาเลือกในกลุ่มวิชาภาษา", englishName: "Language Elective Course", units: "3(x-x-x)", type: "elective", isEnglishTaught: false, prerequisites: [], subsequentCourses: [] }
+                    ]
+                },
+                // Year 3, Semester 1
+                {
+                    title: "ปี 3 เทอม 1",
+                    courses: [
+                        { id: "020023224", name: "จิตวิทยาการศึกษา", englishName: "Education Psychology", units: "3(3-0-6)", type: "major", isEnglishTaught: false, prerequisites: [], subsequentCourses: [] },
+                        { id: "020023230", name: "ฝึกปฏิบัติการสอน 1", englishName: "Teaching Practice 1", units: "3(1-4-4)", type: "major", isEnglishTaught: false, prerequisites: [{ id: "020023225", name: "วิธีการสอนอาชีวศึกษา", englishName: "Teaching Methods in Vocational Education" }, { id: "020023227", name: "นวัตกรรมและสื่อดิจิทัลเพื่อการเรียนการสอน", englishName: "Innovations and Digital Instructional Media" }], subsequentCourses: [{ id: "020023231", name: "ฝึกปฏิบัติการสอน 2", englishName: "Teaching Practice II" }] },
+                        { id: "020253016", name: "ปฏิบัติการระบบควบคุม", englishName: "Control System Laboratory", units: "1(0-3-1)", type: "core", isEnglishTaught: false, prerequisites: [{ id: "020253007", name: "ระบบควบคุม", englishName: "Control Systems" }], subsequentCourses: [] },
+                        { id: "020253020*", name: "การแปลงรูปพลังงานไฟฟ้าเชิงกล", englishName: "Electromechanical Energy Conversion", units: "3(3-0-6)", type: "core", isEnglishTaught: true, prerequisites: [], subsequentCourses: [] },
+                        { id: "020253310*", name: "หลักการการสื่อสาร", englishName: "Principles of Communications", units: "3(2-2-5)", type: "major", isEnglishTaught: true, prerequisites: [{ id: "020253022*", name: "สัญญาณและระบบ", englishName: "Signal and System" }], subsequentCourses: [{ id: "020253312", name: "ระบบการสื่อสารไร้สาย", englishName: "Wireless Communication System" }, { id: "020253315", name: "การสื่อสารแบบดิจิทัล", englishName: "Digital Communications" }] },
+                        { id: "020253311*", name: "คลื่นแม่เหล็กไฟฟ้า", englishName: "Electromagnetic Wave", units: "3(3-0-6)", type: "major", isEnglishTaught: true, prerequisites: [{ id: "020253006*", name: "สนามแม่เหล็กไฟฟ้า", englishName: "Electromagnetic Fields" }], subsequentCourses: [{ id: "020253313*", name: "วิศวกรรมไมโครเวฟ", englishName: "Microwave Engineering" }, { id: "020253316*", name: "วิศวกรรมสายอากาศ", englishName: "Antenna Engineering" }, { id: "020253415", name: "การสื่อสารดาวเทียมและเส้นใยนำแสง", englishName: "Satellite and Fiber Optic Communication" }, { id: "020253416", name: "ระบบการส่งวิทยุและการสื่อสารเคลื่อนที่", englishName: "Radio Transmission and Mobile Communication System" }] },
+                        { id: "08XXXXXXX", name: "วิชาเลือกในกลุ่มวิชาภาษา", englishName: "Language Elective Course", units: "3(x-x-x)", type: "elective", isEnglishTaught: false, prerequisites: [], subsequentCourses: [] }
+                    ]
+                },
+                // Year 3, Semester 2
+                {
+                    title: "ปี 3 เทอม 2",
+                    courses: [
+                        { id: "020023229", name: "การจัดการคุณภาพการศึกษา", englishName: "Educational Quality Management", units: "2(2-0-4)", type: "major", isEnglishTaught: false, prerequisites: [], subsequentCourses: [] },
+                        { id: "020023231", name: "ฝึกปฏิบัติการสอน 2", englishName: "Teaching Practice II", units: "3(0-6-3)", type: "major", isEnglishTaught: false, prerequisites: [{ id: "020023230", name: "ฝึกปฏิบัติการสอน 1", englishName: "Teaching Practice 1" }, { id: "020023228", name: "การวัดและการประเมินผลการศึกษา", englishName: "Educational Measurement and Evaluation" }], subsequentCourses: [{ id: "020023232", name: "ฝึกปฏิบัติการสอน 3", englishName: "Teaching Practice III" }] },
+                        { id: "020253312", name: "ระบบการสื่อสารไร้สาย", englishName: "Wireless Communication System", units: "3(3-0-6)", type: "major", isEnglishTaught: false, prerequisites: [{ id: "020253310*", name: "หลักการการสื่อสาร", englishName: "Principles of Communications" }], subsequentCourses: [] },
+                        { id: "020253313*", name: "วิศวกรรมไมโครเวฟ", englishName: "Microwave Engineering", units: "3(2-2-5)", type: "major", isEnglishTaught: true, prerequisites: [{ id: "020253311*", name: "คลื่นแม่เหล็กไฟฟ้า", englishName: "Electromagnetic Wave" }], subsequentCourses: [] },
+                        { id: "020253314", name: "คอมพิวเตอร์วิทัศน์และปัญญาประดิษฐ์", englishName: "Computer Vision and Artificial Intelligence", units: "3(3-0-6)", type: "major", isEnglishTaught: false, prerequisites: [], subsequentCourses: [] },
+                        { id: "08XXXXXXX", name: "วิชาเลือกในกลุ่มวิชาบูรณาการ", englishName: "Integrated Elective Course", units: "3(x-x-x)", type: "elective", isEnglishTaught: false, prerequisites: [], subsequentCourses: [] },
+                        { id: "XXXXXXXXX", name: "วิชาเลือกในกลุ่มวิชาสังคมศาสตร์และมนุษยศาสตร์", englishName: "Social Sciences and Humanities Elective Course", units: "3(x-x-x)", type: "elective", isEnglishTaught: false, prerequisites: [], subsequentCourses: [] }
+                    ]
+                },
+                // Year 4, Semester 1
+                {
+                    title: "ปี 4 เทอม 1",
+                    courses: [
+                        { id: "020023222", name: "ปรัชญาการศึกษาและการพัฒนาหลักสูตรอาชีวศึกษาและฝึกอบรม", englishName: "Education Philosophy and Vocational Curriculum and Training Courses Development", units: "3(2-2-5)", type: "major", isEnglishTaught: false, prerequisites: [], subsequentCourses: [] },
+                        { id: "020023226*", name: "การวิจัยทางการศึกษา", englishName: "Educational Research", units: "3(2-2-5)", type: "major", isEnglishTaught: true, prerequisites: [], subsequentCourses: [] },
+                        { id: "020023232", name: "ฝึกปฏิบัติการสอน 3", englishName: "Teaching Practice III", units: "3(0-6-3)", type: "major", isEnglishTaught: false, prerequisites: [{ id: "020023231", name: "ฝึกปฏิบัติการสอน 2", englishName: "Teaching Practice II" }], subsequentCourses: [{ id: "020213113", name: "ปฏิบัติการสอนด้านวิศวกรรมไฟฟ้าในสถานศึกษา 1", englishName: "Teaching Practice in Electrical Engineering I" }] },
+                        { id: "020253018", name: "โครงงานพิเศษ", englishName: "Special Project", units: "1(0-3-1)", type: "practice", isEnglishTaught: false, prerequisites: [], subsequentCourses: [] },
+                        { id: "020253315", name: "การสื่อสารแบบดิจิทัล", englishName: "Digital Communications", units: "3(2-2-5)", type: "major", isEnglishTaught: false, prerequisites: [{ id: "020253310*", name: "หลักการการสื่อสาร", englishName: "Principles of Communications" }], subsequentCourses: [] },
+                        { id: "020253316*", name: "วิศวกรรมสายอากาศ", englishName: "Antenna Engineering", units: "3(3-0-6)", type: "major", isEnglishTaught: true, prerequisites: [{ id: "020253311*", name: "คลื่นแม่เหล็กไฟฟ้า", englishName: "Electromagnetic Wave" }], subsequentCourses: [] },
+                        { id: "020253317", name: "อิเล็กทรอนิกส์สื่อสาร", englishName: "Communication Electronics", units: "3(3-0-6)", type: "major", isEnglishTaught: false, prerequisites: [], subsequentCourses: [] },
+                        { id: "XXXXXXXXX", name: "วิชาเลือกในกลุ่มวิชาสังคมศาสตร์และมนุษยศาสตร์", englishName: "Social Sciences and Humanities Elective Course", units: "3(x-x-x)", type: "elective", isEnglishTaught: false, prerequisites: [], subsequentCourses: [] }
+                    ]
+                },
+                // Year 4, Semester 2
+                {
+                    title: "ปี 4 เทอม 2",
+                    courses: [
+                        { id: "020253318", name: "เครือข่ายโทรคมนาคมและสารสนเทศ", englishName: "Communication and Information Networks", units: "3(2-2-5)", type: "major", isEnglishTaught: false, prerequisites: [], subsequentCourses: [{ id: "020253424", name: "การสื่อสารข้อมูลและเครือข่ายคอมพิวเตอร์", englishName: "Data Communication and Computer Networks" }] },
+                        { id: "020253319", name: "การบริหารระบบไฟฟ้าสำหรับสถานีสื่อสารโทรคมนาคม", englishName: "Electrical System Management for Telecommunication Station", units: "3(3-0-6)", type: "major", isEnglishTaught: false, prerequisites: [], subsequentCourses: [] },
+                        { id: "0202xxxxx", name: "วิชาเลือกเฉพาะแขนงวิชาวิศวกรรมอิเล็กทรอนิกส์และโทรคมนาคม", englishName: "Electronics and Telecommunication Engineering Elective Course", units: "3(x-x-x)", type: "elective", isEnglishTaught: false, prerequisites: [], subsequentCourses: [] },
+                        { id: "XXXXXXXXX", name: "วิชาเลือกเสรี", englishName: "Free Elective Course", units: "3(x-x-x)", type: "elective", isEnglishTaught: false, prerequisites: [], subsequentCourses: [] },
+                        { id: "XXXXXXXXX", name: "วิชาเลือกเสรี", englishName: "Free Elective Course", units: "3(x-x-x)", type: "elective", isEnglishTaught: false, prerequisites: [], subsequentCourses: [] },
+                        { id: "XXXXXXXXX", name: "วิชาเลือกในกลุ่มวิชาสังคมศาสตร์และมนุษยศาสตร์", englishName: "Social Sciences and Humanities Elective Course", units: "3(x-x-x)", type: "elective", isEnglishTaught: false, prerequisites: [], subsequentCourses: [] }
+                    ]
+                },
+                // Year 5, Semester 1
+                {
+                    title: "ปี 5 เทอม 1",
+                    courses: [
+                        { id: "020213113", name: "ปฏิบัติการสอนด้านวิศวกรรมไฟฟ้าในสถานศึกษา 1", englishName: "Teaching Practice in Electrical Engineering I", units: "6(540 ชั่วโมง)", type: "practice", isEnglishTaught: false, prerequisites: [{ id: "020023232", name: "ฝึกปฏิบัติการสอน 3", englishName: "Teaching Practice III" }], subsequentCourses: [{ id: "020213114", name: "ปฏิบัติการสอนด้านวิศวกรรมไฟฟ้าในสถานศึกษา 2", englishName: "Teaching Practice in Electrical Engineering II" }] }
+                    ]
+                },
+                // Year 5, Semester 2
+                {
+                    title: "ปี 5 เทอม 2",
+                    courses: [
+                        { id: "020213114", name: "ปฏิบัติการสอนด้านวิศวกรรมไฟฟ้าในสถานศึกษา 2", englishName: "Teaching Practice in Electrical Engineering II", units: "6(540 ชั่วโมง)", type: "practice", isEnglishTaught: false, prerequisites: [{ id: "020213113", name: "ปฏิบัติการสอนด้านวิศวกรรมไฟฟ้าในสถานศึกษา 1", englishName: "Teaching Practice in Electrical Engineering I" }], subsequentCourses: [] }
+                    ]
                 }
-                })
-                .catch(error => {
-                console.error('Error!', error.message);
-                swal("เกิดข้อผิดพลาด", "การเชื่อมต่อมีปัญหา กรุณาลองใหม่อีกครั้ง!", "error");
-                });
-        };
+            ];
 
-        if (selectedPaymentMethod === 'transfer' && file) {
-            const reader = new FileReader();
-            reader.onloadend = function() {
-                proceedWithSubmission(reader.result, file.name);
+            let currentSemesterIndex = 0;
+            const semesterDisplay = document.getElementById('semesterDisplay');
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const semesterSelect = document.getElementById('semesterSelect');
+
+            const courseModal = document.getElementById('courseModal');
+            const closeModalBtn = document.getElementById('closeModalBtn');
+            const modalCourseTitle = document.getElementById('modalCourseTitle');
+            const modalCourseEnglishTitle = document.getElementById('modalCourseEnglishTitle');
+            const modalCourseUnits = document.getElementById('modalCourseUnits');
+            const prereqList = document.getElementById('prereqList');
+            const noPrereqs = document.getElementById('noPrereqs');
+            const subsequentList = document.getElementById('subsequentList');
+            const noSubsequent = document.getElementById('noSubsequent');
+
+
+            /**
+             * Populates the semester dropdown with options.
+             */
+            function populateSemesterSelect() {
+                allSemestersData.forEach((semester, index) => {
+                    const option = document.createElement('option');
+                    option.value = index;
+                    option.textContent = semester.title;
+                    semesterSelect.appendChild(option);
+                });
             }
-            reader.onerror = function() {
-                console.error("FileReader error!");
-                swal("เกิดข้อผิดพลาด", "ไม่สามารถอ่านไฟล์ที่เลือกได้", "error");
-            };
-            reader.readAsDataURL(file);
-        } else if (selectedPaymentMethod === 'cash') {
-            proceedWithSubmission();
-        }
-      });
-    </script>
-  </body>
+
+            /**
+             * Renders the specified semester's courses into the display area.
+             * @param {number} index The index of the semester to render.
+             */
+            function renderSemester(index) {
+                const semester = allSemestersData[index];
+                if (!semester) return; // Exit if semester data is not found
+
+                // Clear previous content
+                semesterDisplay.innerHTML = '';
+
+                // Create and append the semester title
+                const semesterTitleElem = document.createElement('div');
+                semesterTitleElem.classList.add('semester-title');
+                semesterTitleElem.textContent = semester.title;
+                semesterDisplay.appendChild(semesterTitleElem);
+
+                // Create and append course cards for the current semester
+                semester.courses.forEach(course => {
+                    const courseCardElem = document.createElement('div');
+                    // Add base class and specific type class for styling
+                    courseCardElem.classList.add('course-card', course.type);
+                    if (course.isEnglishTaught) {
+                        courseCardElem.classList.add('english-taught');
+                    }
+                    courseCardElem.innerHTML = `
+                        ${course.id} ${course.name} <br> <span class="text-gray-600 italic">${course.englishName}</span>
+                        <span class="unit-credit">${course.units}</span>
+                    `;
+                    // Attach click listener to each course card
+                    courseCardElem.addEventListener('click', () => openCourseModal(course));
+                    semesterDisplay.appendChild(courseCardElem);
+                });
+
+                // Update button states (disabled/enabled) based on current semester index
+                prevBtn.disabled = index === 0;
+                nextBtn.disabled = index === allSemestersData.length - 1;
+
+                // Synchronize dropdown selection
+                semesterSelect.value = index;
+            }
+
+            /**
+             * Opens the course details modal and populates it with course data.
+             * @param {object} course The course object to display.
+             */
+            function openCourseModal(course) {
+                modalCourseTitle.textContent = `${course.id} ${course.name}`;
+                modalCourseEnglishTitle.textContent = course.englishName;
+                modalCourseUnits.textContent = `หน่วยกิต: ${course.units}`;
+
+                // Populate prerequisites
+                prereqList.innerHTML = '';
+                if (course.prerequisites && course.prerequisites.length > 0) {
+                    noPrereqs.classList.add('hidden');
+                    course.prerequisites.forEach(prereq => {
+                        const listItem = document.createElement('li');
+                        listItem.textContent = `${prereq.id} ${prereq.name} (${prereq.englishName})`;
+                        prereqList.appendChild(listItem);
+                    });
+                } else {
+                    noPrereqs.classList.remove('hidden');
+                }
+
+                // Populate subsequent courses
+                subsequentList.innerHTML = '';
+                if (course.subsequentCourses && course.subsequentCourses.length > 0) {
+                    noSubsequent.classList.add('hidden');
+                    course.subsequentCourses.forEach(subsequent => {
+                        const listItem = document.createElement('li');
+                        listItem.textContent = `${subsequent.id} ${subsequent.name} (${subsequent.englishName})`;
+                        subsequentList.appendChild(listItem);
+                    });
+                } else {
+                    noSubsequent.classList.remove('hidden');
+                }
+
+                courseModal.classList.remove('hidden');
+            }
+
+            /**
+             * Closes the course details modal.
+             */
+            function closeCourseModal() {
+                courseModal.classList.add('hidden');
+            }
+
+            // Event listener for the "Previous Semester" button
+            prevBtn.addEventListener('click', () => {
+                if (currentSemesterIndex > 0) {
+                    currentSemesterIndex--;
+                    renderSemester(currentSemesterIndex);
+                }
+            });
+
+            // Event listener for the "Next Semester" button
+            nextBtn.addEventListener('click', () => {
+                if (currentSemesterIndex < allSemestersData.length - 1) {
+                    currentSemesterIndex++;
+                    renderSemester(currentSemesterIndex);
+                }
+            });
+
+            // Event listener for the semester dropdown
+            semesterSelect.addEventListener('change', (event) => {
+                currentSemesterIndex = parseInt(event.target.value);
+                renderSemester(currentSemesterIndex);
+            });
+
+            // Event listener for closing the modal
+            closeModalBtn.addEventListener('click', closeCourseModal);
+            courseModal.addEventListener('click', (e) => { // Close modal when clicking outside content
+                if (e.target === courseModal) {
+                    closeCourseModal();
+                }
+            });
+
+            // Initial population of the dropdown and render of the first semester when the page loads
+            populateSemesterSelect();
+            renderSemester(currentSemesterIndex);
+        </script>
+    </div>
+</body>
 </html>
