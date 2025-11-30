@@ -1,495 +1,758 @@
-<!DOCTYPE html>
-<html lang="th">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>แผนการเรียนครุศาสตร์ไฟฟ้าหลักสูตร5ปีแขนงวิชาวิศวกรรมอิเล็กทรอนิกส์และโทรคมนาคม</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f0f2f5;
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            min-height: 100vh;
-            padding: 20px;
-            box-sizing: border-box;
-        }
-        .flowchart-container {
-            background-color: #ffffff;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            padding: 30px;
-            width: 100%;
-            max-width: 800px; /* Adjust max-width for single column view */
-            overflow-x: hidden; /* Hide horizontal scrollbar */
-            position: relative;
-        }
-        .semester-display {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            min-height: 400px; /* Ensure enough height for content */
-            justify-content: flex-start;
-            align-items: center;
-        }
-        .semester-title {
-            font-weight: 700;
-            color: #333;
-            text-align: center;
-            margin-bottom: 10px;
-            font-size: 1.5em; /* Larger for single semester view */
-        }
-        .course-card {
-            background-color: #e3f2fd; /* Light blue */
-            border: 1px solid #90caf9; /* Medium blue */
-            border-radius: 8px;
-            padding: 12px;
-            font-size: 0.9em;
-            text-align: center;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-            cursor: pointer; /* Change cursor to pointer to indicate clickability */
-            word-wrap: break-word; /* Ensure text wraps */
-            width: 95%; /* Make cards take more width in single column */
-            max-width: 350px; /* Max width for cards */
-        }
-        .course-card.core {
-            background-color: #ffe0b2; /* Light orange */
-            border-color: #ffb74d; /* Medium orange */
-        }
-        .course-card.major {
-            background-color: #c8e6c9; /* Light green */
-            border-color: #81c784; /* Medium green */
-        }
-        .course-card.elective {
-            background-color: #f8bbd0; /* Light pink */
-            border-color: #f06292; /* Medium pink */
-        }
-        .course-card.practice {
-            background-color: #d1c4e9; /* Light purple */
-            border-color: #9575cd; /* Medium purple */
-        }
-        /* Highlight for English-taught courses */
-        .course-card.english-taught {
-            border: 2px solid #3b82f6; /* A prominent blue border */
-            box-shadow: 0 0 8px rgba(59, 130, 246, 0.7); /* A blue glow */
-        }
+import React, { useState, useEffect } from 'react';
+import { 
+  Leaf, 
+  Droplets, 
+  Sun, 
+  Thermometer, 
+  Activity, 
+  AlertTriangle, 
+  User, 
+  ShoppingCart, 
+  ArrowRightLeft, 
+  Search,
+  Bell,
+  Menu,
+  CheckCircle,
+  MapPin,
+  Package,        // Icon for Supplies
+  Beaker,         // Icon for Chemicals/Soil conditioners
+  Sliders,        // Icon for Config
+  Truck           // Icon for Delivery
+} from 'lucide-react';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
 
-        .unit-credit {
-            font-size: 0.8em;
-            color: #555;
-            margin-top: 5px;
-            display: block;
-        }
-        .subject-type-label {
-            display: flex;
-            justify-content: center; /* Center labels */
-            margin-bottom: 25px;
-            gap: 15px;
-            flex-wrap: wrap;
-            text-align: center;
-        }
-        .label-item {
-            display: flex;
-            align-items: center;
-            font-size: 0.85em;
-            color: #555;
-        }
-        .label-color {
-            width: 18px;
-            height: 18px;
-            border-radius: 4px;
-            margin-right: 8px;
-            border: 1px solid;
-        }
+// --- Mock Data ---
 
-        /* Modal Styles */
-        .modal {
-            background-color: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(5px);
-            -webkit-backdrop-filter: blur(5px);
-        }
-        .modal-content {
-            max-height: 80vh;
-            overflow-y: auto;
-        }
+const MOCK_TREES = [
+  { id: 'D001', variety: 'หมอนทอง', age: '4 เดือน', status: 'Healthy', owner: 'คุณสมชาย', moisture: 65, ph: 6.2, temp: 28, light: 12000, price: 1500, img: 'healthy' },
+  { id: 'D002', variety: 'ก้านยาว', age: '3 เดือน', status: 'Warning', owner: 'คุณวิภา', moisture: 45, ph: 5.8, temp: 32, light: 15000, price: 2000, img: 'warning' },
+  { id: 'D003', variety: 'มูซังคิง', age: '5 เดือน', status: 'Critical', owner: 'ฟาร์ม (ว่าง)', moisture: 30, ph: 7.5, temp: 34, light: 18000, price: 3500, img: 'critical' },
+  { id: 'D004', variety: 'หมอนทอง', age: '2 เดือน', status: 'Healthy', owner: 'ฟาร์ม (ว่าง)', moisture: 68, ph: 6.0, temp: 27, light: 11000, price: 1200, img: 'healthy' },
+  { id: 'D005', variety: 'นกกระจิบ', age: '4 เดือน', status: 'Healthy', owner: 'คุณอนันต์', moisture: 62, ph: 6.1, temp: 29, light: 12500, price: 1800, img: 'healthy' },
+  { id: 'D006', variety: 'หมอนทอง', age: '3 เดือน', status: 'Healthy', owner: 'ฟาร์ม (ว่าง)', moisture: 66, ph: 6.3, temp: 28, light: 11500, price: 1500, img: 'healthy' },
+];
 
-        /* Responsive adjustments */
-        @media (max-width: 768px) {
-            .flowchart-container {
-                padding: 15px;
-                max-width: 100%;
-            }
-            .semester-title {
-                font-size: 1.3em;
-            }
-            .course-card {
-                padding: 10px;
-                font-size: 0.8em;
-                width: 100%;
-            }
-            .unit-credit {
-                font-size: 0.7em;
-            }
-            .subject-type-label {
-                gap: 10px;
-                margin-bottom: 20px;
-            }
-            .label-item {
-                font-size: 0.8em;
-            }
-            .label-color {
-                width: 16px;
-                height: 16px;
-            }
-            button {
-                padding: 10px 18px;
-                font-size: 0.9em;
-            }
-            select {
-                padding: 8px 12px;
-                font-size: 0.9em;
-            }
-        }
-    </style>
-</head>
-<body>
-    <div class="flowchart-container">
-        <h1 class="text-3xl font-bold text-center text-gray-800 mb-8">แผนการเรียนครุศาสตร์ไฟฟ้าหลักสูตร5ปีแขนงวิชาวิศวกรรมอิเล็กทรอนิกส์และโทรคมนาคม</h1>
+const MOCK_SOIL_PRODUCTS = [
+  { id: 'S001', name: 'โดโลไมท์ (Dolomite)', desc: 'แก้ดินกรด เพิ่มแคลเซียม', price: 150, unit: '25 กก.', type: 'pH+', color: 'bg-gray-100 text-gray-600' },
+  { id: 'S002', name: 'กำมะถันผง (Sulfur)', desc: 'แก้ดินด่าง ลด pH', price: 350, unit: '1 กก.', type: 'pH-', color: 'bg-yellow-100 text-yellow-600' },
+  { id: 'S003', name: 'ฮิวมัสอัดเม็ด', desc: 'เพิ่มความร่วนซุย', price: 450, unit: '25 กก.', type: 'Texture', color: 'bg-emerald-100 text-emerald-600' },
+  { id: 'S004', name: 'ไตรโคเดอร์มา', desc: 'เชื้อราดี ป้องกันรากเน่า', price: 200, unit: '500 กรัม', type: 'Bio', color: 'bg-green-100 text-green-600' },
+];
 
-        <div class="subject-type-label">
-            <div class="label-item"><span class="label-color bg-e3f2fd border-blue-400"></span> หมวดวิชาศึกษาทั่วไป</div>
-            <div class="label-item"><span class="label-color bg-ffe0b2 border-orange-400"></span> วิชาบังคับ (พื้นฐานวิศวกรรม)</div>
-            <div class="label-item"><span class="label-color bg-c8e6c9 border-green-400"></span> วิชาบังคับ (เฉพาะแขนง)</div>
-            <div class="label-item"><span class="label-color bg-f8bbd0 border-pink-400"></span> วิชาเลือก</div>
-            <div class="label-item"><span class="label-color bg-d1c4e9 border-purple-400"></span> ปฏิบัติการสอน / โครงงาน</div>
-            <div class="label-item"><span class="label-color border-blue-600 shadow-[0_0_8px_rgba(59,130,246,0.7)]"></span> วิชาสอนเป็นภาษาอังกฤษ</div>
-        </div>
+const GRAPH_DATA = [
+  { time: '08:00', moisture: 70, temp: 24 },
+  { time: '10:00', moisture: 68, temp: 26 },
+  { time: '12:00', moisture: 55, temp: 32 },
+  { time: '14:00', moisture: 50, temp: 34 },
+  { time: '16:00', moisture: 60, temp: 30 },
+  { time: '18:00', moisture: 65, temp: 28 },
+];
 
-        <div id="semesterDisplay" class="semester-display">
-            <!-- Semester content will be rendered here by JavaScript -->
-        </div>
+// --- Components ---
 
-        <div class="flex flex-col items-center gap-4 mt-8">
-            <select id="semesterSelect" class="px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                <!-- Options will be populated by JavaScript -->
-            </select>
-            <div class="flex justify-center gap-4 w-full max-w-sm">
-                <button id="prevBtn" class="flex-1 px-6 py-3 bg-gray-300 text-gray-800 rounded-lg shadow-md hover:bg-gray-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-                    เทอมก่อนหน้า
-                </button>
-                <button id="nextBtn" class="flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg shadow-md hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-                    เทอมถัดไป
-                </button>
-            </div>
-        </div>
-
-        <!-- Course Details Modal -->
-        <div id="courseModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-50 hidden modal">
-            <div class="bg-white p-8 rounded-lg shadow-xl max-w-lg w-full m-4 relative modal-content">
-                <button id="closeModalBtn" class="absolute top-3 right-3 text-gray-500 hover:text-gray-700 text-2xl font-bold">&times;</button>
-                <h2 id="modalCourseTitle" class="text-2xl font-bold mb-2 text-center text-gray-800"></h2>
-                <p id="modalCourseEnglishTitle" class="text-gray-600 italic mb-4 text-center"></p>
-                <p id="modalCourseUnits" class="text-gray-600 mb-6 text-center"></p>
-
-                <div id="modalPrerequisites" class="mb-4">
-                    <h3 class="text-lg font-semibold text-gray-700 border-b pb-2 mb-2">วิชาที่ต้องผ่านก่อนหน้า:</h3>
-                    <ul id="prereqList" class="list-disc list-inside text-gray-600 pl-4">
-                        <!-- Prereq courses will be listed here -->
-                    </ul>
-                    <p id="noPrereqs" class="text-gray-500 italic hidden">ไม่มีวิชาที่ต้องผ่านก่อนหน้าระบุไว้</p>
-                </div>
-
-                <div id="modalSubsequentCourses">
-                    <h3 class="text-lg font-semibold text-gray-700 border-b pb-2 mb-2">วิชาที่ต่อเนื่อง:</h3>
-                    <ul id="subsequentList" class="list-disc list-inside text-gray-600 pl-4">
-                        <!-- Subsequent courses will be listed here -->
-                    </ul>
-                    <p id="noSubsequent" class="text-gray-500 italic hidden">ไม่มีวิชาต่อเนื่องระบุไว้</p>
-                </div>
-            </div>
-        </div>
-
-        <script>
-            // Data for all semesters and their courses
-            const allSemestersData = [
-                // Year 1, Semester 1
-                {
-                    title: "ปี 1 เทอม 1",
-                    courses: [
-                        { id: "020023221", name: "หลักวิชาชีพครู", englishName: "Teaching Profession", units: "3(3-0-6)", type: "major", isEnglishTaught: false, prerequisites: [], subsequentCourses: [] },
-                        { id: "020253001*", name: "การเขียนแบบวิศวกรรม", englishName: "Engineering Drawing", units: "3(2-2-5)", type: "core", isEnglishTaught: true, prerequisites: [], subsequentCourses: [] },
-                        { id: "020253008", name: "การวัดและเครื่องมือวัดทางไฟฟ้า", englishName: "Electrical Instrumentation and Measurement", units: "3(3-0-6)", type: "core", isEnglishTaught: false, prerequisites: [], subsequentCourses: [{ id: "020253009", name: "ปฏิบัติการวัดและเครื่องมือวัดทางไฟฟ้า", englishName: "Electrical Instrumentation and Measurement Laboratory" }] },
-                        { id: "040113001", name: "เคมีสำหรับวิศวกร", englishName: "Chemistry for Engineers", units: "3(3-0-6)", type: "core", isEnglishTaught: false, prerequisites: [], subsequentCourses: [{ id: "040113002", name: "ปฏิบัติการเคมีสำหรับวิศวกร", englishName: "Chemistry Laboratory for Engineers" }] },
-                        { id: "040313005", name: "ฟิสิกส์ 1", englishName: "Physics 1", units: "3(3-0-6)", type: "core", isEnglishTaught: false, prerequisites: [], subsequentCourses: [{ id: "040313006", name: "ปฏิบัติการฟิสิกส์ 1", englishName: "Physics Laboratory 1" }] },
-                        { id: "040313006", name: "ปฏิบัติการฟิสิกส์ 1", englishName: "Physics Laboratory 1", units: "1(0-2-1)", type: "core", isEnglishTaught: false, prerequisites: [{ id: "040313005", name: "ฟิสิกส์ 1", englishName: "Physics 1" }], subsequentCourses: [] },
-                        { id: "040203111", name: "คณิตศาสตร์วิศวกรรม 1", englishName: "Engineering Mathematics I", units: "3(3-0-6)", type: "core", isEnglishTaught: false, prerequisites: [], subsequentCourses: [{ id: "040203112", name: "คณิตศาสตร์วิศวกรรม 2", englishName: "Engineering Mathematics II" }] },
-                        { id: "080103001", name: "ภาษาอังกฤษ 1", englishName: "English 1", units: "3(3-0-6)", type: "general", isEnglishTaught: false, prerequisites: [], subsequentCourses: [{ id: "080103002", name: "ภาษาอังกฤษ 2", englishName: "English II" }] }
-                    ]
-                },
-                // Year 1, Semester 2
-                {
-                    title: "ปี 1 เทอม 2",
-                    courses: [
-                        { id: "020023228", name: "การวัดและการประเมินผลการศึกษา", englishName: "Educational Measurement and Evaluation", units: "3(2-2-5)", type: "major", isEnglishTaught: false, prerequisites: [], subsequentCourses: [{ id: "020023231", name: "ฝึกปฏิบัติการสอน 2", englishName: "Teaching Practice II" }] },
-                        { id: "020003101", name: "คอมพิวเตอร์เพื่อการศึกษาเบื้องต้น", englishName: "Basic Computer for Education", units: "1(1-1-2)", type: "general", isEnglishTaught: false, prerequisites: [], subsequentCourses: [] },
-                        { id: "020253009", name: "ปฏิบัติการวัดและเครื่องมือวัดทางไฟฟ้า", englishName: "Electrical Instrumentation and Measurement Laboratory", units: "1(0-3-1)", type: "core", isEnglishTaught: false, prerequisites: [{ id: "020253008", name: "การวัดและเครื่องมือวัดทางไฟฟ้า", englishName: "Electrical Instrumentation and Measurement" }], subsequentCourses: [] },
-                        { id: "020253013", name: "ปฏิบัติงานวิศวกรรมไฟฟ้าเบื้องต้น", englishName: "Basic Electrical Engineering Practice", units: "3(0-6-3)", type: "core", isEnglishTaught: false, prerequisites: [], subsequentCourses: [] },
-                        { id: "020253021", name: "เทคโนโลยีการสื่อสาร", englishName: "Communication Technology", units: "3(3-0-6)", type: "core", isEnglishTaught: false, prerequisites: [], subsequentCourses: [{ id: "020253424", name: "การสื่อสารข้อมูลและเครือข่ายคอมพิวเตอร์", englishName: "Data Communication and Computer Networks" }] },
-                        { id: "040113002", name: "ปฏิบัติการเคมีสำหรับวิศวกร", englishName: "Chemistry Laboratory for Engineers", units: "1(0-3-1)", type: "core", isEnglishTaught: false, prerequisites: [{ id: "040113001", name: "เคมีสำหรับวิศวกร", englishName: "Chemistry for Engineers" }], subsequentCourses: [] },
-                        { id: "040203112", name: "คณิตศาสตร์วิศวกรรม 2", englishName: "Engineering Mathematics II", units: "3(3-0-6)", type: "core", isEnglishTaught: false, prerequisites: [{ id: "040203111", name: "คณิตศาสตร์วิศวกรรม 1", englishName: "Engineering Mathematics I" }], subsequentCourses: [{ id: "020253000", name: "คณิตศาสตร์วิศวกรรมไฟฟ้า", englishName: "Electrical Engineering Mathematics" }, { id: "020253004*", name: "วงจรไฟฟ้า", englishName: "Electric Circuits" }] },
-                        { id: "080103002", name: "ภาษาอังกฤษ 2", englishName: "English II", units: "3(3-0-6)", type: "general", isEnglishTaught: false, prerequisites: [{ id: "080103001", name: "ภาษาอังกฤษ 1", englishName: "English 1" }], subsequentCourses: [] }, // Removed specific subsequent as electives are flexible.
-                        { id: "08XXXXXXX", name: "วิชาเลือกในกลุ่มวิชากีฬาและนันทนาการ", englishName: "Sport and Recreation Elective Course", units: "1(x-x-x)", type: "elective", isEnglishTaught: false, prerequisites: [], subsequentCourses: [] }
-                    ]
-                },
-                // Year 2, Semester 1
-                {
-                    title: "ปี 2 เทอม 1",
-                    courses: [
-                        { id: "020003103*", name: "คอมพิวเตอร์และการโปรแกรม", englishName: "Computer and Programming", units: "3(2-2-5)", type: "general", isEnglishTaught: true, prerequisites: [], subsequentCourses: [] },
-                        { id: "020023227", name: "นวัตกรรมและสื่อดิจิทัลเพื่อการเรียนการสอน", englishName: "Innovations and Digital Instructional Media", units: "3(2-2-5)", type: "major", isEnglishTaught: false, prerequisites: [], subsequentCourses: [{ id: "020023230", name: "ฝึกปฏิบัติการสอน 1", englishName: "Teaching Practice 1" }] },
-                        { id: "020253000", name: "คณิตศาสตร์วิศวกรรมไฟฟ้า", englishName: "Electrical Engineering Mathematics", units: "3(3-0-6)", type: "core", isEnglishTaught: false, prerequisites: [{ id: "040203112", name: "คณิตศาสตร์วิศวกรรม 2", englishName: "Engineering Mathematics II" }], subsequentCourses: [{ id: "020253006*", name: "สนามแม่เหล็กไฟฟ้า", englishName: "Electromagnetic Fields" }, { id: "020253022*", name: "สัญญาณและระบบ", englishName: "Signal and System" }] },
-                        { id: "020253002", name: "กลศาสตร์วิศวกรรม", englishName: "Engineering Mechanics", units: "3(3-0-6)", type: "core", isEnglishTaught: false, prerequisites: [], subsequentCourses: [] },
-                        { id: "020253003", name: "วัสดุวิศวกรรม", englishName: "Engineering Materials", units: "3(3-0-6)", type: "core", isEnglishTaught: false, prerequisites: [], subsequentCourses: [] },
-                        { id: "020253004*", name: "วงจรไฟฟ้า", englishName: "Electric Circuits", units: "3(3-0-6)", type: "core", isEnglishTaught: true, prerequisites: [{ id: "040203112", name: "คณิตศาสตร์วิศวกรรม 2", englishName: "Engineering Mathematics II" }], subsequentCourses: [] },
-                        { id: "020253019*", name: "อุปกรณ์อิเล็กทรอนิกส์และวงจรแอนะล็อก", englishName: "Electronic Devices and Analog Circuits", units: "3(3-0-6)", type: "core", isEnglishTaught: true, prerequisites: [], subsequentCourses: [{ id: "020253418", name: "วิศวกรรมอิเล็กทรอนิกส์ขั้นสูง", englishName: "Advanced Electronic Engineering" }, { id: "020253419", name: "การออกแบบวงจรอิเล็กทรอนิกส์", englishName: "Electronic Circuit Design" }] },
-                        { id: "08XXXXXXX", name: "วิชาเลือกในกลุ่มวิชากีฬาและนันทนาการ", englishName: "Sport and Recreation Elective Course", units: "1(x-x-x)", type: "elective", isEnglishTaught: false, prerequisites: [], subsequentCourses: [] }
-                    ]
-                },
-                // Year 2, Semester 2
-                {
-                    title: "ปี 2 เทอม 2",
-                    courses: [
-                        { id: "020023223", name: "ภาษาและวัฒนธรรมเพื่อวิชาชีพครู", englishName: "Language and Cultures for Teaching Profession", units: "3(3-0-6)", type: "major", isEnglishTaught: false, prerequisites: [], subsequentCourses: [] },
-                        { id: "020023225", name: "วิธีการสอนอาชีวศึกษา", englishName: "Teaching Methods in Vocational Education", units: "3(2-2-5)", type: "major", isEnglishTaught: false, prerequisites: [], subsequentCourses: [{ id: "020023230", name: "ฝึกปฏิบัติการสอน 1", englishName: "Teaching Practice 1" }] },
-                        { id: "020253006*", name: "สนามแม่เหล็กไฟฟ้า", englishName: "Electromagnetic Fields", units: "3(3-0-6)", type: "core", isEnglishTaught: true, prerequisites: [{ id: "020253000", name: "คณิตศาสตร์วิศวกรรมไฟฟ้า", englishName: "Electrical Engineering Mathematics" }], subsequentCourses: [{ id: "020253311*", name: "คลื่นแม่เหล็กไฟฟ้า", englishName: "Electromagnetic Wave" }] },
-                        { id: "020253007", name: "ระบบควบคุม", englishName: "Control Systems", units: "3(3-0-6)", type: "core", isEnglishTaught: false, prerequisites: [], subsequentCourses: [{ id: "020253016", name: "ปฏิบัติการระบบควบคุม", englishName: "Control System Laboratory" }] },
-                        { id: "020253022*", name: "สัญญาณและระบบ", englishName: "Signal and System", units: "3(3-0-6)", type: "core", isEnglishTaught: true, prerequisites: [{ id: "020253000", name: "คณิตศาสตร์วิศวกรรมไฟฟ้า", englishName: "Electrical Engineering Mathematics" }], subsequentCourses: [{ id: "020253310*", name: "หลักการการสื่อสาร", englishName: "Principles of Communications" }] },
-                        { id: "020253023*", name: "ระบบสมองกลฝังตัวและอินเทอร์เน็ตสรรพสิ่ง", englishName: "Embedded System and IoT", units: "3(2-2-5)", type: "core", isEnglishTaught: true, prerequisites: [], subsequentCourses: [{ id: "020253425", name: "การออกแบบวงจรรวมและประยุกต์ใช้งานวงจรรวมลอจิกและดิจิทัล", englishName: "Digital and Logic Integrated Circuit Design and Application" }] },
-                        { id: "08XXXXXXX", name: "วิชาเลือกในกลุ่มวิชาภาษา", englishName: "Language Elective Course", units: "3(x-x-x)", type: "elective", isEnglishTaught: false, prerequisites: [], subsequentCourses: [] }
-                    ]
-                },
-                // Year 3, Semester 1
-                {
-                    title: "ปี 3 เทอม 1",
-                    courses: [
-                        { id: "020023224", name: "จิตวิทยาการศึกษา", englishName: "Education Psychology", units: "3(3-0-6)", type: "major", isEnglishTaught: false, prerequisites: [], subsequentCourses: [] },
-                        { id: "020023230", name: "ฝึกปฏิบัติการสอน 1", englishName: "Teaching Practice 1", units: "3(1-4-4)", type: "major", isEnglishTaught: false, prerequisites: [{ id: "020023225", name: "วิธีการสอนอาชีวศึกษา", englishName: "Teaching Methods in Vocational Education" }, { id: "020023227", name: "นวัตกรรมและสื่อดิจิทัลเพื่อการเรียนการสอน", englishName: "Innovations and Digital Instructional Media" }], subsequentCourses: [{ id: "020023231", name: "ฝึกปฏิบัติการสอน 2", englishName: "Teaching Practice II" }] },
-                        { id: "020253016", name: "ปฏิบัติการระบบควบคุม", englishName: "Control System Laboratory", units: "1(0-3-1)", type: "core", isEnglishTaught: false, prerequisites: [{ id: "020253007", name: "ระบบควบคุม", englishName: "Control Systems" }], subsequentCourses: [] },
-                        { id: "020253020*", name: "การแปลงรูปพลังงานไฟฟ้าเชิงกล", englishName: "Electromechanical Energy Conversion", units: "3(3-0-6)", type: "core", isEnglishTaught: true, prerequisites: [], subsequentCourses: [] },
-                        { id: "020253310*", name: "หลักการการสื่อสาร", englishName: "Principles of Communications", units: "3(2-2-5)", type: "major", isEnglishTaught: true, prerequisites: [{ id: "020253022*", name: "สัญญาณและระบบ", englishName: "Signal and System" }], subsequentCourses: [{ id: "020253312", name: "ระบบการสื่อสารไร้สาย", englishName: "Wireless Communication System" }, { id: "020253315", name: "การสื่อสารแบบดิจิทัล", englishName: "Digital Communications" }] },
-                        { id: "020253311*", name: "คลื่นแม่เหล็กไฟฟ้า", englishName: "Electromagnetic Wave", units: "3(3-0-6)", type: "major", isEnglishTaught: true, prerequisites: [{ id: "020253006*", name: "สนามแม่เหล็กไฟฟ้า", englishName: "Electromagnetic Fields" }], subsequentCourses: [{ id: "020253313*", name: "วิศวกรรมไมโครเวฟ", englishName: "Microwave Engineering" }, { id: "020253316*", name: "วิศวกรรมสายอากาศ", englishName: "Antenna Engineering" }, { id: "020253415", name: "การสื่อสารดาวเทียมและเส้นใยนำแสง", englishName: "Satellite and Fiber Optic Communication" }, { id: "020253416", name: "ระบบการส่งวิทยุและการสื่อสารเคลื่อนที่", englishName: "Radio Transmission and Mobile Communication System" }] },
-                        { id: "08XXXXXXX", name: "วิชาเลือกในกลุ่มวิชาภาษา", englishName: "Language Elective Course", units: "3(x-x-x)", type: "elective", isEnglishTaught: false, prerequisites: [], subsequentCourses: [] }
-                    ]
-                },
-                // Year 3, Semester 2
-                {
-                    title: "ปี 3 เทอม 2",
-                    courses: [
-                        { id: "020023229", name: "การจัดการคุณภาพการศึกษา", englishName: "Educational Quality Management", units: "2(2-0-4)", type: "major", isEnglishTaught: false, prerequisites: [], subsequentCourses: [] },
-                        { id: "020023231", name: "ฝึกปฏิบัติการสอน 2", englishName: "Teaching Practice II", units: "3(0-6-3)", type: "major", isEnglishTaught: false, prerequisites: [{ id: "020023230", name: "ฝึกปฏิบัติการสอน 1", englishName: "Teaching Practice 1" }, { id: "020023228", name: "การวัดและการประเมินผลการศึกษา", englishName: "Educational Measurement and Evaluation" }], subsequentCourses: [{ id: "020023232", name: "ฝึกปฏิบัติการสอน 3", englishName: "Teaching Practice III" }] },
-                        { id: "020253312", name: "ระบบการสื่อสารไร้สาย", englishName: "Wireless Communication System", units: "3(3-0-6)", type: "major", isEnglishTaught: false, prerequisites: [{ id: "020253310*", name: "หลักการการสื่อสาร", englishName: "Principles of Communications" }], subsequentCourses: [] },
-                        { id: "020253313*", name: "วิศวกรรมไมโครเวฟ", englishName: "Microwave Engineering", units: "3(2-2-5)", type: "major", isEnglishTaught: true, prerequisites: [{ id: "020253311*", name: "คลื่นแม่เหล็กไฟฟ้า", englishName: "Electromagnetic Wave" }], subsequentCourses: [] },
-                        { id: "020253314", name: "คอมพิวเตอร์วิทัศน์และปัญญาประดิษฐ์", englishName: "Computer Vision and Artificial Intelligence", units: "3(3-0-6)", type: "major", isEnglishTaught: false, prerequisites: [], subsequentCourses: [] },
-                        { id: "08XXXXXXX", name: "วิชาเลือกในกลุ่มวิชาบูรณาการ", englishName: "Integrated Elective Course", units: "3(x-x-x)", type: "elective", isEnglishTaught: false, prerequisites: [], subsequentCourses: [] },
-                        { id: "XXXXXXXXX", name: "วิชาเลือกในกลุ่มวิชาสังคมศาสตร์และมนุษยศาสตร์", englishName: "Social Sciences and Humanities Elective Course", units: "3(x-x-x)", type: "elective", isEnglishTaught: false, prerequisites: [], subsequentCourses: [] }
-                    ]
-                },
-                // Year 4, Semester 1
-                {
-                    title: "ปี 4 เทอม 1",
-                    courses: [
-                        { id: "020023222", name: "ปรัชญาการศึกษาและการพัฒนาหลักสูตรอาชีวศึกษาและฝึกอบรม", englishName: "Education Philosophy and Vocational Curriculum and Training Courses Development", units: "3(2-2-5)", type: "major", isEnglishTaught: false, prerequisites: [], subsequentCourses: [] },
-                        { id: "020023226*", name: "การวิจัยทางการศึกษา", englishName: "Educational Research", units: "3(2-2-5)", type: "major", isEnglishTaught: true, prerequisites: [], subsequentCourses: [] },
-                        { id: "020023232", name: "ฝึกปฏิบัติการสอน 3", englishName: "Teaching Practice III", units: "3(0-6-3)", type: "major", isEnglishTaught: false, prerequisites: [{ id: "020023231", name: "ฝึกปฏิบัติการสอน 2", englishName: "Teaching Practice II" }], subsequentCourses: [{ id: "020213113", name: "ปฏิบัติการสอนด้านวิศวกรรมไฟฟ้าในสถานศึกษา 1", englishName: "Teaching Practice in Electrical Engineering I" }] },
-                        { id: "020253018", name: "โครงงานพิเศษ", englishName: "Special Project", units: "1(0-3-1)", type: "practice", isEnglishTaught: false, prerequisites: [], subsequentCourses: [] },
-                        { id: "020253315", name: "การสื่อสารแบบดิจิทัล", englishName: "Digital Communications", units: "3(2-2-5)", type: "major", isEnglishTaught: false, prerequisites: [{ id: "020253310*", name: "หลักการการสื่อสาร", englishName: "Principles of Communications" }], subsequentCourses: [] },
-                        { id: "020253316*", name: "วิศวกรรมสายอากาศ", englishName: "Antenna Engineering", units: "3(3-0-6)", type: "major", isEnglishTaught: true, prerequisites: [{ id: "020253311*", name: "คลื่นแม่เหล็กไฟฟ้า", englishName: "Electromagnetic Wave" }], subsequentCourses: [] },
-                        { id: "020253317", name: "อิเล็กทรอนิกส์สื่อสาร", englishName: "Communication Electronics", units: "3(3-0-6)", type: "major", isEnglishTaught: false, prerequisites: [], subsequentCourses: [] },
-                        { id: "XXXXXXXXX", name: "วิชาเลือกในกลุ่มวิชาสังคมศาสตร์และมนุษยศาสตร์", englishName: "Social Sciences and Humanities Elective Course", units: "3(x-x-x)", type: "elective", isEnglishTaught: false, prerequisites: [], subsequentCourses: [] }
-                    ]
-                },
-                // Year 4, Semester 2
-                {
-                    title: "ปี 4 เทอม 2",
-                    courses: [
-                        { id: "020253318", name: "เครือข่ายโทรคมนาคมและสารสนเทศ", englishName: "Communication and Information Networks", units: "3(2-2-5)", type: "major", isEnglishTaught: false, prerequisites: [], subsequentCourses: [{ id: "020253424", name: "การสื่อสารข้อมูลและเครือข่ายคอมพิวเตอร์", englishName: "Data Communication and Computer Networks" }] },
-                        { id: "020253319", name: "การบริหารระบบไฟฟ้าสำหรับสถานีสื่อสารโทรคมนาคม", englishName: "Electrical System Management for Telecommunication Station", units: "3(3-0-6)", type: "major", isEnglishTaught: false, prerequisites: [], subsequentCourses: [] },
-                        { id: "0202xxxxx", name: "วิชาเลือกเฉพาะแขนงวิชาวิศวกรรมอิเล็กทรอนิกส์และโทรคมนาคม", englishName: "Electronics and Telecommunication Engineering Elective Course", units: "3(x-x-x)", type: "elective", isEnglishTaught: false, prerequisites: [], subsequentCourses: [] },
-                        { id: "XXXXXXXXX", name: "วิชาเลือกเสรี", englishName: "Free Elective Course", units: "3(x-x-x)", type: "elective", isEnglishTaught: false, prerequisites: [], subsequentCourses: [] },
-                        { id: "XXXXXXXXX", name: "วิชาเลือกเสรี", englishName: "Free Elective Course", units: "3(x-x-x)", type: "elective", isEnglishTaught: false, prerequisites: [], subsequentCourses: [] },
-                        { id: "XXXXXXXXX", name: "วิชาเลือกในกลุ่มวิชาสังคมศาสตร์และมนุษยศาสตร์", englishName: "Social Sciences and Humanities Elective Course", units: "3(x-x-x)", type: "elective", isEnglishTaught: false, prerequisites: [], subsequentCourses: [] }
-                    ]
-                },
-                // Year 5, Semester 1
-                {
-                    title: "ปี 5 เทอม 1",
-                    courses: [
-                        { id: "020213113", name: "ปฏิบัติการสอนด้านวิศวกรรมไฟฟ้าในสถานศึกษา 1", englishName: "Teaching Practice in Electrical Engineering I", units: "6(540 ชั่วโมง)", type: "practice", isEnglishTaught: false, prerequisites: [{ id: "020023232", name: "ฝึกปฏิบัติการสอน 3", englishName: "Teaching Practice III" }], subsequentCourses: [{ id: "020213114", name: "ปฏิบัติการสอนด้านวิศวกรรมไฟฟ้าในสถานศึกษา 2", englishName: "Teaching Practice in Electrical Engineering II" }] }
-                    ]
-                },
-                // Year 5, Semester 2
-                {
-                    title: "ปี 5 เทอม 2",
-                    courses: [
-                        { id: "020213114", name: "ปฏิบัติการสอนด้านวิศวกรรมไฟฟ้าในสถานศึกษา 2", englishName: "Teaching Practice in Electrical Engineering II", units: "6(540 ชั่วโมง)", type: "practice", isEnglishTaught: false, prerequisites: [{ id: "020213113", name: "ปฏิบัติการสอนด้านวิศวกรรมไฟฟ้าในสถานศึกษา 1", englishName: "Teaching Practice in Electrical Engineering I" }], subsequentCourses: [] }
-                    ]
-                }
-            ];
-
-            let currentSemesterIndex = 0;
-            const semesterDisplay = document.getElementById('semesterDisplay');
-            const prevBtn = document.getElementById('prevBtn');
-            const nextBtn = document.getElementById('nextBtn');
-            const semesterSelect = document.getElementById('semesterSelect');
-
-            const courseModal = document.getElementById('courseModal');
-            const closeModalBtn = document.getElementById('closeModalBtn');
-            const modalCourseTitle = document.getElementById('modalCourseTitle');
-            const modalCourseEnglishTitle = document.getElementById('modalCourseEnglishTitle');
-            const modalCourseUnits = document.getElementById('modalCourseUnits');
-            const prereqList = document.getElementById('prereqList');
-            const noPrereqs = document.getElementById('noPrereqs');
-            const subsequentList = document.getElementById('subsequentList');
-            const noSubsequent = document.getElementById('noSubsequent');
-
-
-            /**
-             * Populates the semester dropdown with options.
-             */
-            function populateSemesterSelect() {
-                allSemestersData.forEach((semester, index) => {
-                    const option = document.createElement('option');
-                    option.value = index;
-                    option.textContent = semester.title;
-                    semesterSelect.appendChild(option);
-                });
-            }
-
-            /**
-             * Renders the specified semester's courses into the display area.
-             * @param {number} index The index of the semester to render.
-             */
-            function renderSemester(index) {
-                const semester = allSemestersData[index];
-                if (!semester) return; // Exit if semester data is not found
-
-                // Clear previous content
-                semesterDisplay.innerHTML = '';
-
-                // Create and append the semester title
-                const semesterTitleElem = document.createElement('div');
-                semesterTitleElem.classList.add('semester-title');
-                semesterTitleElem.textContent = semester.title;
-                semesterDisplay.appendChild(semesterTitleElem);
-
-                // Create and append course cards for the current semester
-                semester.courses.forEach(course => {
-                    const courseCardElem = document.createElement('div');
-                    // Add base class and specific type class for styling
-                    courseCardElem.classList.add('course-card', course.type);
-                    if (course.isEnglishTaught) {
-                        courseCardElem.classList.add('english-taught');
-                    }
-                    courseCardElem.innerHTML = `
-                        ${course.id} ${course.name} <br> <span class="text-gray-600 italic">${course.englishName}</span>
-                        <span class="unit-credit">${course.units}</span>
-                    `;
-                    // Attach click listener to each course card
-                    courseCardElem.addEventListener('click', () => openCourseModal(course));
-                    semesterDisplay.appendChild(courseCardElem);
-                });
-
-                // Update button states (disabled/enabled) based on current semester index
-                prevBtn.disabled = index === 0;
-                nextBtn.disabled = index === allSemestersData.length - 1;
-
-                // Synchronize dropdown selection
-                semesterSelect.value = index;
-            }
-
-            /**
-             * Opens the course details modal and populates it with course data.
-             * @param {object} course The course object to display.
-             */
-            function openCourseModal(course) {
-                modalCourseTitle.textContent = `${course.id} ${course.name}`;
-                modalCourseEnglishTitle.textContent = course.englishName;
-                modalCourseUnits.textContent = `หน่วยกิต: ${course.units}`;
-
-                // Populate prerequisites
-                prereqList.innerHTML = '';
-                if (course.prerequisites && course.prerequisites.length > 0) {
-                    noPrereqs.classList.add('hidden');
-                    course.prerequisites.forEach(prereq => {
-                        const listItem = document.createElement('li');
-                        listItem.textContent = `${prereq.id} ${prereq.name} (${prereq.englishName})`;
-                        prereqList.appendChild(listItem);
-                    });
-                } else {
-                    noPrereqs.classList.remove('hidden');
-                }
-
-                // Populate subsequent courses
-                subsequentList.innerHTML = '';
-                if (course.subsequentCourses && course.subsequentCourses.length > 0) {
-                    noSubsequent.classList.add('hidden');
-                    course.subsequentCourses.forEach(subsequent => {
-                        const listItem = document.createElement('li');
-                        listItem.textContent = `${subsequent.id} ${subsequent.name} (${subsequent.englishName})`;
-                        subsequentList.appendChild(listItem);
-                    });
-                } else {
-                    noSubsequent.classList.remove('hidden');
-                }
-
-                courseModal.classList.remove('hidden');
-            }
-
-            /**
-             * Closes the course details modal.
-             */
-            function closeCourseModal() {
-                courseModal.classList.add('hidden');
-            }
-
-            // Event listener for the "Previous Semester" button
-            prevBtn.addEventListener('click', () => {
-                if (currentSemesterIndex > 0) {
-                    currentSemesterIndex--;
-                    renderSemester(currentSemesterIndex);
-                }
-            });
-
-            // Event listener for the "Next Semester" button
-            nextBtn.addEventListener('click', () => {
-                if (currentSemesterIndex < allSemestersData.length - 1) {
-                    currentSemesterIndex++;
-                    renderSemester(currentSemesterIndex);
-                }
-            });
-
-            // Event listener for the semester dropdown
-            semesterSelect.addEventListener('change', (event) => {
-                currentSemesterIndex = parseInt(event.target.value);
-                renderSemester(currentSemesterIndex);
-            });
-
-            // Event listener for closing the modal
-            closeModalBtn.addEventListener('click', closeCourseModal);
-            courseModal.addEventListener('click', (e) => { // Close modal when clicking outside content
-                if (e.target === courseModal) {
-                    closeCourseModal();
-                }
-            });
-
-            // Initial population of the dropdown and render of the first semester when the page loads
-            populateSemesterSelect();
-            renderSemester(currentSemesterIndex);
-        </script>
+const StatCard = ({ title, value, unit, icon: Icon, color, trend }) => (
+  <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between">
+    <div>
+      <p className="text-gray-500 text-sm mb-1">{title}</p>
+      <div className="flex items-end gap-2">
+        <h3 className="text-2xl font-bold text-gray-800">{value}</h3>
+        <span className="text-sm text-gray-500 mb-1">{unit}</span>
+      </div>
+      {trend && <p className={`text-xs mt-2 ${trend === 'down' ? 'text-red-500' : 'text-green-500'}`}>
+        {trend === 'down' ? '▼ ลดลงจากชั่วโมงก่อน' : '▲ ปกติ'}
+      </p>}
     </div>
-</body>
-</html>
+    <div className={`p-3 rounded-full ${color}`}>
+      <Icon className="w-6 h-6 text-white" />
+    </div>
+  </div>
+);
+
+const TreeCard = ({ tree, onClick }) => {
+  const statusColor = tree.status === 'Healthy' ? 'bg-green-100 text-green-700 border-green-200' 
+    : tree.status === 'Warning' ? 'bg-yellow-100 text-yellow-700 border-yellow-200' 
+    : 'bg-red-100 text-red-700 border-red-200';
+
+  return (
+    <div 
+      onClick={() => onClick(tree)}
+      className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow cursor-pointer flex flex-col"
+    >
+      <div className="h-32 bg-gray-100 relative">
+        <div className="absolute inset-0 flex items-center justify-center text-gray-400">
+           <Leaf size={48} opacity={0.2} />
+        </div>
+        <div className={`absolute top-2 right-2 px-2 py-1 rounded-full text-xs font-semibold border ${statusColor}`}>
+          {tree.status === 'Healthy' ? 'ปกติ' : tree.status === 'Warning' ? 'เฝ้าระวัง' : 'เสี่ยงโรค'}
+        </div>
+        <div className="absolute bottom-2 left-2 bg-black/50 text-white text-xs px-2 py-1 rounded backdrop-blur-sm">
+          {tree.id}
+        </div>
+      </div>
+      <div className="p-4 flex-1 flex flex-col">
+        <div className="flex justify-between items-start mb-2">
+          <h4 className="font-bold text-gray-800">{tree.variety}</h4>
+          <span className="text-xs text-gray-500">{tree.age}</span>
+        </div>
+        <div className="flex items-center gap-1 text-xs text-gray-500 mb-4">
+          <User size={12} />
+          {tree.owner}
+        </div>
+        
+        <div className="grid grid-cols-2 gap-2 mt-auto">
+          <div className="flex items-center gap-1 text-xs">
+            <Droplets size={12} className="text-blue-500" />
+            <span>{tree.moisture}%</span>
+          </div>
+          <div className="flex items-center gap-1 text-xs">
+             <Thermometer size={12} className="text-orange-500" />
+            <span>{tree.temp}°C</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// --- New Component: Fertilizer Mixer ---
+const FertilizerMixer = ({ onBuy }) => {
+  const [formula, setFormula] = useState({ n: 15, p: 15, k: 15 });
+  const [weight, setWeight] = useState(1); // kg
+
+  // Mock Price Calculation: Base 20 + (N*0.5 + P*0.8 + K*0.6) * weight
+  const pricePerKg = 20 + (formula.n * 0.5) + (formula.p * 0.8) + (formula.k * 0.6);
+  const totalPrice = Math.round(pricePerKg * weight);
+
+  return (
+    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+      <div className="flex items-center gap-3 mb-6">
+        <div className="p-2 bg-emerald-100 rounded-lg text-emerald-600">
+          <Sliders size={24} />
+        </div>
+        <div>
+          <h3 className="text-lg font-bold text-gray-800">เครื่องผสมปุ๋ยอัจฉริยะ (Smart Mixer)</h3>
+          <p className="text-xs text-gray-500">กำหนดสูตร N-P-K และปริมาณที่ต้องการ</p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="space-y-6">
+          {/* Sliders */}
+          <div>
+            <div className="flex justify-between mb-2">
+              <label className="text-sm font-bold text-emerald-700">Nitrogen (N) - ใบ</label>
+              <span className="font-mono bg-emerald-100 text-emerald-800 px-2 rounded text-sm">{formula.n}%</span>
+            </div>
+            <input 
+              type="range" min="0" max="46" value={formula.n} 
+              onChange={(e) => setFormula({...formula, n: parseInt(e.target.value)})}
+              className="w-full h-2 bg-emerald-200 rounded-lg appearance-none cursor-pointer accent-emerald-600"
+            />
+          </div>
+
+          <div>
+            <div className="flex justify-between mb-2">
+              <label className="text-sm font-bold text-blue-700">Phosphorus (P) - ราก/ดอก</label>
+              <span className="font-mono bg-blue-100 text-blue-800 px-2 rounded text-sm">{formula.p}%</span>
+            </div>
+            <input 
+              type="range" min="0" max="46" value={formula.p} 
+              onChange={(e) => setFormula({...formula, p: parseInt(e.target.value)})}
+              className="w-full h-2 bg-blue-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
+            />
+          </div>
+
+          <div>
+            <div className="flex justify-between mb-2">
+              <label className="text-sm font-bold text-orange-700">Potassium (K) - ผล/รสชาติ</label>
+              <span className="font-mono bg-orange-100 text-orange-800 px-2 rounded text-sm">{formula.k}%</span>
+            </div>
+            <input 
+              type="range" min="0" max="60" value={formula.k} 
+              onChange={(e) => setFormula({...formula, k: parseInt(e.target.value)})}
+              className="w-full h-2 bg-orange-200 rounded-lg appearance-none cursor-pointer accent-orange-600"
+            />
+          </div>
+        </div>
+
+        {/* Preview & Action */}
+        <div className="bg-gray-50 rounded-xl p-6 flex flex-col justify-between border border-gray-200">
+          <div>
+            <h4 className="font-bold text-gray-700 mb-4">สรุปรายการสั่งผสม</h4>
+            <div className="flex justify-between items-center mb-4">
+               <span className="text-sm text-gray-600">สูตรปุ๋ย:</span>
+               <span className="font-mono font-bold text-lg text-gray-800">{formula.n}-{formula.p}-{formula.k}</span>
+            </div>
+            <div className="mb-4">
+              <label className="text-sm text-gray-600 mb-1 block">ปริมาณ (กิโลกรัม)</label>
+              <div className="flex items-center gap-2">
+                <button onClick={() => setWeight(Math.max(1, weight-1))} className="w-8 h-8 rounded bg-white border border-gray-300 flex items-center justify-center hover:bg-gray-100">-</button>
+                <input 
+                  type="number" 
+                  value={weight} 
+                  onChange={(e) => setWeight(parseInt(e.target.value) || 1)}
+                  className="w-full text-center border border-gray-300 rounded h-8"
+                />
+                <button onClick={() => setWeight(weight+1)} className="w-8 h-8 rounded bg-white border border-gray-300 flex items-center justify-center hover:bg-gray-100">+</button>
+              </div>
+            </div>
+          </div>
+          
+          <div className="mt-4 pt-4 border-t border-gray-200">
+             <div className="flex justify-between items-end mb-4">
+                <span className="text-gray-500">ราคารวม</span>
+                <span className="text-2xl font-bold text-emerald-600">฿{totalPrice.toLocaleString()}</span>
+             </div>
+             <button 
+               onClick={() => onBuy(`ปุ๋ยสูตร ${formula.n}-${formula.p}-${formula.k} จำนวน ${weight} กก.`)}
+               className="w-full py-3 bg-emerald-600 text-white rounded-lg font-semibold hover:bg-emerald-700 shadow-lg shadow-emerald-200 transition-all flex items-center justify-center gap-2"
+             >
+               <ShoppingCart size={18} /> สั่งซื้อและผสมทันที
+             </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const TransferModal = ({ tree, onClose, onConfirm }) => {
+  const [newOwnerId, setNewOwnerId] = useState('');
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 backdrop-blur-sm">
+      <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl">
+        <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+          <ArrowRightLeft className="text-emerald-600" /> โอนกรรมสิทธิ์
+        </h3>
+        
+        <div className="bg-gray-50 p-4 rounded-lg mb-4 border border-gray-100">
+          <div className="flex justify-between mb-2">
+            <span className="text-gray-500">รหัสต้นไม้:</span>
+            <span className="font-mono font-bold">{tree.id}</span>
+          </div>
+          <div className="flex justify-between mb-2">
+            <span className="text-gray-500">สายพันธุ์:</span>
+            <span>{tree.variety}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-gray-500">เจ้าของปัจจุบัน:</span>
+            <span className="text-emerald-600 font-medium">{tree.owner}</span>
+          </div>
+        </div>
+
+        <div className="mb-6">
+          <label className="block text-sm font-medium text-gray-700 mb-1">กรอก ID หรือชื่อผู้รับโอน</label>
+          <input 
+            type="text" 
+            className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+            placeholder="Ex. U-10293 (คุณสมหญิง)"
+            value={newOwnerId}
+            onChange={(e) => setNewOwnerId(e.target.value)}
+          />
+        </div>
+
+        <div className="flex gap-3">
+          <button onClick={onClose} className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50">ยกเลิก</button>
+          <button 
+            onClick={() => onConfirm(newOwnerId)}
+            className="flex-1 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 shadow-md shadow-emerald-200"
+          >
+            ยืนยันการโอน
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default function DurianDashboard() {
+  const [activeTab, setActiveTab] = useState('overview');
+  const [selectedTree, setSelectedTree] = useState(null);
+  const [showTransferModal, setShowTransferModal] = useState(false);
+  const [notification, setNotification] = useState(null);
+
+  // Simulate Real-time Data Jitter
+  const [sensorData, setSensorData] = useState({ moisture: 68, temp: 28, light: 11500, ph: 6.2 });
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setSensorData(prev => ({
+        moisture: prev.moisture + (Math.random() * 2 - 1),
+        temp: prev.temp + (Math.random() * 1 - 0.5),
+        light: prev.light + (Math.random() * 500 - 250),
+        ph: prev.ph
+      }));
+    }, 2000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const handleAction = (message) => {
+    setNotification({
+      type: 'success',
+      message: `${message} เรียบร้อยแล้ว`
+    });
+    setTimeout(() => setNotification(null), 3000);
+  };
+
+  const handleTransfer = (newOwner) => {
+    handleAction(`โอนกรรมสิทธิ์ต้น ${selectedTree.id} ให้ ${newOwner}`);
+    setShowTransferModal(false);
+  };
+
+  const renderContent = () => {
+    if (activeTab === 'overview') {
+      return (
+        <div className="space-y-6 animate-fade-in">
+          {/* Stats Row */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <StatCard title="ความชื้นในดินเฉลี่ย" value={sensorData.moisture.toFixed(1)} unit="%" icon={Droplets} color="bg-blue-500" trend="normal" />
+            <StatCard title="อุณหภูมิโรงเรือน" value={sensorData.temp.toFixed(1)} unit="°C" icon={Thermometer} color="bg-orange-500" trend="up" />
+            <StatCard title="ความเข้มแสง" value={Math.round(sensorData.light)} unit="Lux" icon={Sun} color="bg-yellow-500" trend="normal" />
+            <StatCard title="แจ้งเตือนความเสี่ยง" value="2" unit="ต้น" icon={AlertTriangle} color="bg-red-500" />
+          </div>
+
+          {/* Map & List */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2 bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="font-bold text-gray-800">แผนผังโรงเรือน (Nursery Map)</h3>
+                <div className="flex gap-2 text-xs">
+                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-green-500"></span> ปกติ</span>
+                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-red-500"></span> เสี่ยง</span>
+                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-gray-300"></span> ว่าง</span>
+                </div>
+              </div>
+              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
+                {MOCK_TREES.map((tree) => (
+                  <button 
+                    key={tree.id}
+                    onClick={() => { setSelectedTree(tree); setActiveTab('detail'); }}
+                    className={`aspect-square rounded-lg flex flex-col items-center justify-center border-2 transition-all hover:scale-105
+                      ${tree.status === 'Healthy' ? 'bg-green-50 border-green-200 hover:border-green-400' 
+                      : tree.status === 'Warning' ? 'bg-yellow-50 border-yellow-200 hover:border-yellow-400'
+                      : 'bg-red-50 border-red-200 hover:border-red-400'}`}
+                  >
+                    <Leaf size={20} className={
+                      tree.status === 'Healthy' ? 'text-green-500' 
+                      : tree.status === 'Warning' ? 'text-yellow-500' 
+                      : 'text-red-500'
+                    } />
+                    <span className="text-xs font-bold mt-1 text-gray-600">{tree.id}</span>
+                  </button>
+                ))}
+                {/* Fillers for demo */}
+                {[...Array(6)].map((_, i) => (
+                   <div key={i} className="aspect-square rounded-lg border-2 border-dashed border-gray-200 flex items-center justify-center bg-gray-50">
+                     <span className="text-xs text-gray-400">ว่าง</span>
+                   </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+              <h3 className="font-bold text-gray-800 mb-4">การแจ้งเตือนล่าสุด</h3>
+              <div className="space-y-3">
+                <div className="flex gap-3 p-3 bg-red-50 rounded-lg border border-red-100">
+                  <AlertTriangle className="text-red-500 flex-shrink-0" size={20} />
+                  <div>
+                    <h4 className="text-sm font-bold text-gray-800">ตรวจพบความเสี่ยงรากเน่า</h4>
+                    <p className="text-xs text-gray-600">ต้น D003: ความชื้นสูงเกินและใบเหลือง</p>
+                    <button 
+                      onClick={() => { setSelectedTree(MOCK_TREES.find(t => t.id === 'D003')); setActiveTab('detail'); }}
+                      className="text-xs text-red-600 font-semibold mt-1 hover:underline"
+                    >
+                      ดูรายละเอียด
+                    </button>
+                  </div>
+                </div>
+                <div className="flex gap-3 p-3 bg-yellow-50 rounded-lg border border-yellow-100">
+                  <Sun className="text-yellow-600 flex-shrink-0" size={20} />
+                  <div>
+                    <h4 className="text-sm font-bold text-gray-800">แสงจ้าเกินไป</h4>
+                    <p className="text-xs text-gray-600">โซน B: อาจทำให้ใบไหม้ได้</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    if (activeTab === 'market') {
+      return (
+        <div className="space-y-6 animate-fade-in">
+           <div className="flex justify-between items-center">
+             <h2 className="text-2xl font-bold text-gray-800">ตลาดซื้อขายต้นกล้า</h2>
+             <div className="relative">
+                <input type="text" placeholder="ค้นหาสายพันธุ์..." className="pl-9 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+                <Search className="absolute left-3 top-2.5 text-gray-400" size={16} />
+             </div>
+           </div>
+
+           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {MOCK_TREES.filter(t => t.owner.includes('ว่าง')).map(tree => (
+                <div key={tree.id} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex flex-col">
+                  <div className="h-40 bg-gray-100 relative flex items-center justify-center">
+                    <Leaf size={64} className="text-emerald-200" />
+                    <div className="absolute top-2 left-2 bg-emerald-600 text-white text-xs px-2 py-1 rounded">
+                      AI Score: 98/100
+                    </div>
+                  </div>
+                  <div className="p-4 flex-1 flex flex-col">
+                    <div className="flex justify-between items-start mb-2">
+                       <h3 className="font-bold text-lg">{tree.variety}</h3>
+                       <span className="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded">{tree.age}</span>
+                    </div>
+                    <div className="space-y-1 text-sm text-gray-500 mb-4">
+                      <p>ความสูง: 45 cm</p>
+                      <p>ขนาดลำต้น: 1.2 cm</p>
+                    </div>
+                    <div className="mt-auto flex justify-between items-center">
+                      <span className="text-emerald-600 font-bold text-lg">฿{tree.price.toLocaleString()}</span>
+                      <button className="bg-emerald-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-emerald-700 transition-colors">
+                        ซื้อเลย
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+           </div>
+        </div>
+      );
+    }
+
+    if (activeTab === 'supplies') {
+        return (
+            <div className="space-y-8 animate-fade-in pb-12">
+                <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+                    <Package className="text-emerald-600" /> ร้านค้าวัสดุเกษตร (Supplies Shop)
+                </h2>
+
+                {/* Section 1: Fertilizer Mixer */}
+                <section>
+                    <FertilizerMixer onBuy={handleAction} />
+                </section>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    {/* Section 2: Soil Conditioners */}
+                    <section>
+                        <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                            <Beaker className="text-purple-500" /> วัสดุและสารปรับปรุงดิน
+                        </h3>
+                        <div className="space-y-3">
+                            {MOCK_SOIL_PRODUCTS.map(product => (
+                                <div key={product.id} className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex items-center justify-between">
+                                    <div className="flex items-center gap-4">
+                                        <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${product.color}`}>
+                                            <span className="font-bold text-xs">{product.type}</span>
+                                        </div>
+                                        <div>
+                                            <h4 className="font-bold text-gray-800">{product.name}</h4>
+                                            <p className="text-xs text-gray-500">{product.desc} • {product.unit}</p>
+                                        </div>
+                                    </div>
+                                    <div className="text-right">
+                                        <div className="font-bold text-emerald-600 mb-1">฿{product.price}</div>
+                                        <button 
+                                            onClick={() => handleAction(`สั่งซื้อ ${product.name}`)}
+                                            className="px-3 py-1 text-xs bg-gray-900 text-white rounded hover:bg-gray-700"
+                                        >
+                                            ใส่ตะกร้า
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </section>
+
+                    {/* Section 3: Water Service */}
+                    <section>
+                         <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                            <Droplets className="text-blue-500" /> บริการน้ำเพื่อการเกษตร
+                        </h3>
+                        <div className="bg-blue-50 p-6 rounded-xl border border-blue-100 mb-4">
+                            <div className="flex justify-between items-end mb-2">
+                                <span className="text-blue-800 text-sm font-medium">เครดิตน้ำคงเหลือ</span>
+                                <span className="text-3xl font-bold text-blue-600">450 <span className="text-sm font-normal text-blue-500">ลิตร</span></span>
+                            </div>
+                            <div className="w-full bg-blue-200 rounded-full h-2">
+                                <div className="bg-blue-500 h-2 rounded-full" style={{ width: '20%' }}></div>
+                            </div>
+                            <p className="text-xs text-blue-400 mt-2">คำเตือน: น้ำใกล้หมด กรุณาเติมเพื่อป้องกันระบบหยุดทำงาน</p>
+                        </div>
+                        
+                        <div className="grid grid-cols-2 gap-3">
+                            <button 
+                                onClick={() => handleAction('เติมน้ำ 1,000 ลิตร')}
+                                className="bg-white p-4 rounded-xl border border-gray-200 hover:border-blue-400 hover:shadow-md transition-all text-center group"
+                            >
+                                <Droplets className="mx-auto mb-2 text-blue-400 group-hover:text-blue-600" />
+                                <h4 className="font-bold text-gray-700">1,000 ลิตร</h4>
+                                <p className="text-sm text-blue-600 mt-1">฿150</p>
+                            </button>
+                             <button 
+                                onClick={() => handleAction('เติมน้ำรถใหญ่ 6,000 ลิตร')}
+                                className="bg-white p-4 rounded-xl border border-gray-200 hover:border-blue-400 hover:shadow-md transition-all text-center group"
+                            >
+                                <Truck className="mx-auto mb-2 text-blue-400 group-hover:text-blue-600" />
+                                <h4 className="font-bold text-gray-700">6,000 ลิตร</h4>
+                                <p className="text-sm text-blue-600 mt-1">฿800</p>
+                            </button>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        );
+    }
+
+    if (activeTab === 'detail' && selectedTree) {
+        return (
+            <div className="space-y-6 animate-fade-in">
+                <button onClick={() => setActiveTab('overview')} className="text-sm text-gray-500 hover:text-emerald-600 flex items-center gap-1">
+                    ← กลับหน้าภาพรวม
+                </button>
+
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    {/* Left Column: Visual AI */}
+                    <div className="lg:col-span-1 space-y-6">
+                        <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+                             <h3 className="font-bold text-gray-800 mb-3 flex items-center gap-2">
+                                <Activity className="text-blue-500" size={20}/> AI Diagnosis (Real-time)
+                             </h3>
+                             <div className="aspect-[3/4] bg-gray-900 rounded-lg relative overflow-hidden group">
+                                {/* Simulated Camera Feed */}
+                                <div className="absolute inset-0 flex items-center justify-center">
+                                    <Leaf size={120} className={`opacity-80 ${selectedTree.status === 'Critical' ? 'text-yellow-600' : 'text-green-600'}`} />
+                                </div>
+                                
+                                {/* AI Bounding Box Simulation */}
+                                {selectedTree.status === 'Critical' && (
+                                    <div className="absolute top-1/4 left-1/4 w-1/2 h-1/3 border-2 border-red-500 rounded animate-pulse bg-red-500/10">
+                                        <span className="absolute -top-6 left-0 bg-red-500 text-white text-xs px-2 py-0.5 rounded">
+                                            Root Rot Risk: 85%
+                                        </span>
+                                    </div>
+                                )}
+                                
+                                <div className="absolute bottom-4 left-4 right-4 bg-black/60 backdrop-blur-md p-3 rounded-lg text-white">
+                                    <div className="flex justify-between items-center text-sm">
+                                        <span className="text-gray-300">Status:</span>
+                                        <span className={selectedTree.status === 'Healthy' ? 'text-green-400 font-bold' : 'text-red-400 font-bold'}>
+                                            {selectedTree.status}
+                                        </span>
+                                    </div>
+                                    <div className="flex justify-between items-center text-sm mt-1">
+                                        <span className="text-gray-300">Confidence:</span>
+                                        <span>98.2%</span>
+                                    </div>
+                                </div>
+                             </div>
+                             
+                             <div className="mt-4 grid grid-cols-2 gap-3">
+                                <button className="w-full py-2 bg-blue-50 text-blue-600 rounded-lg text-sm font-medium border border-blue-100 hover:bg-blue-100">
+                                    ดูประวัติภาพ
+                                </button>
+                                <button className="w-full py-2 bg-emerald-50 text-emerald-600 rounded-lg text-sm font-medium border border-emerald-100 hover:bg-emerald-100">
+                                    เปิดกล้องสด
+                                </button>
+                             </div>
+                        </div>
+                    </div>
+
+                    {/* Right Column: Data & Ownership */}
+                    <div className="lg:col-span-2 space-y-6">
+                        {/* Header Info */}
+                        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                            <div>
+                                <div className="flex items-center gap-2">
+                                    <h2 className="text-2xl font-bold text-gray-800">ต้นทุเรียน #{selectedTree.id}</h2>
+                                    <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">{selectedTree.variety}</span>
+                                </div>
+                                <div className="flex items-center gap-2 text-gray-500 mt-1">
+                                    <User size={16} />
+                                    <span>เจ้าของ: {selectedTree.owner}</span>
+                                </div>
+                            </div>
+                            <div className="flex gap-3">
+                                <button className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm hover:bg-gray-50 text-gray-700">
+                                    <CheckCircle size={16} /> บันทึกการดูแล
+                                </button>
+                                <button 
+                                    onClick={() => setShowTransferModal(true)}
+                                    className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm hover:bg-emerald-700 shadow-lg shadow-emerald-200"
+                                >
+                                    <ArrowRightLeft size={16} /> โอนกรรมสิทธิ์
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Sensors */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
+                                <div className="flex justify-between mb-2">
+                                    <span className="text-gray-500 text-sm flex items-center gap-2"><Droplets size={16} /> ความชื้นดิน</span>
+                                    <span className="font-bold text-lg text-blue-600">{selectedTree.moisture}%</span>
+                                </div>
+                                <div className="w-full bg-gray-200 rounded-full h-2.5">
+                                    <div className={`h-2.5 rounded-full ${selectedTree.moisture < 50 ? 'bg-red-500' : 'bg-blue-500'}`} style={{ width: `${selectedTree.moisture}%` }}></div>
+                                </div>
+                                <p className="text-xs text-gray-400 mt-2">Target: 60-70%</p>
+                            </div>
+                            
+                             <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
+                                <div className="flex justify-between mb-2">
+                                    <span className="text-gray-500 text-sm flex items-center gap-2"><Thermometer size={16} /> อุณหภูมิดิน</span>
+                                    <span className="font-bold text-lg text-orange-600">{selectedTree.temp}°C</span>
+                                </div>
+                                <div className="w-full bg-gray-200 rounded-full h-2.5">
+                                    <div className="bg-orange-500 h-2.5 rounded-full" style={{ width: `${(selectedTree.temp / 50) * 100}%` }}></div>
+                                </div>
+                                <p className="text-xs text-gray-400 mt-2">Target: 25-30°C</p>
+                            </div>
+
+                             <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
+                                <div className="flex justify-between mb-2">
+                                    <span className="text-gray-500 text-sm flex items-center gap-2"><Activity size={16} /> ค่า pH</span>
+                                    <span className="font-bold text-lg text-purple-600">{selectedTree.ph}</span>
+                                </div>
+                                {/* Simple Gauge Representation */}
+                                <div className="relative pt-1">
+                                    <div className="flex mb-2 items-center justify-between">
+                                        <div className="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-purple-600 bg-purple-200">
+                                            Acidic
+                                        </div>
+                                         <div className="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-purple-600 bg-purple-200">
+                                            Alkaline
+                                        </div>
+                                    </div>
+                                    <div className="overflow-hidden h-2 mb-4 text-xs flex rounded bg-purple-200">
+                                         <div style={{ width: `${(selectedTree.ph / 14) * 100}%` }} className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-purple-500"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
+                                <div className="flex justify-between mb-2">
+                                    <span className="text-gray-500 text-sm flex items-center gap-2"><Sun size={16} /> แสง (Lux)</span>
+                                    <span className="font-bold text-lg text-yellow-500">{selectedTree.light.toLocaleString()}</span>
+                                </div>
+                                 <p className="text-xs text-gray-500">สภาพแสงเหมาะสมสำหรับต้นกล้าอายุ 4 เดือน</p>
+                            </div>
+                        </div>
+
+                        {/* Chart */}
+                        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 h-64">
+                            <h3 className="font-bold text-gray-800 mb-4 text-sm">ประวัติความชื้นและอุณหภูมิ (24 ชม.)</h3>
+                            <ResponsiveContainer width="100%" height="100%">
+                                <AreaChart data={GRAPH_DATA}>
+                                    <defs>
+                                        <linearGradient id="colorMoisture" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.8}/>
+                                            <stop offset="95%" stopColor="#3B82F6" stopOpacity={0}/>
+                                        </linearGradient>
+                                    </defs>
+                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
+                                    <XAxis dataKey="time" axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#9CA3AF'}} />
+                                    <YAxis axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#9CA3AF'}} />
+                                    <Tooltip contentStyle={{borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'}} />
+                                    <Area type="monotone" dataKey="moisture" stroke="#3B82F6" fillOpacity={1} fill="url(#colorMoisture)" />
+                                    <Line type="monotone" dataKey="temp" stroke="#F97316" strokeWidth={2} dot={false} />
+                                </AreaChart>
+                            </ResponsiveContainer>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+    return null;
+  };
+
+  return (
+    <div className="min-h-screen bg-slate-50 font-sans text-slate-900 flex">
+      {/* Toast Notification */}
+      {notification && (
+        <div className="fixed top-4 right-4 z-50 bg-emerald-600 text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-2 animate-bounce-in">
+          <CheckCircle size={20} />
+          {notification.message}
+        </div>
+      )}
+
+      {/* Sidebar */}
+      <aside className="w-20 lg:w-64 bg-white border-r border-gray-200 flex flex-col fixed h-full z-10 transition-all duration-300">
+        <div className="p-6 flex items-center gap-3 justify-center lg:justify-start">
+          <div className="w-10 h-10 bg-emerald-600 rounded-xl flex items-center justify-center text-white shadow-emerald-200 shadow-lg">
+            <Leaf size={24} />
+          </div>
+          <span className="font-bold text-xl hidden lg:block text-emerald-900">DurianAI</span>
+        </div>
+
+        <nav className="flex-1 px-4 space-y-2 mt-4">
+          <button 
+            onClick={() => { setActiveTab('overview'); setSelectedTree(null); }}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === 'overview' ? 'bg-emerald-50 text-emerald-700 font-semibold' : 'text-gray-500 hover:bg-gray-50'}`}
+          >
+            <MapPin size={20} /> <span className="hidden lg:block">ภาพรวมฟาร์ม</span>
+          </button>
+          
+          <button 
+            onClick={() => setActiveTab('supplies')}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === 'supplies' ? 'bg-emerald-50 text-emerald-700 font-semibold' : 'text-gray-500 hover:bg-gray-50'}`}
+          >
+            <Package size={20} /> <span className="hidden lg:block">ร้านค้าวัสดุ</span>
+          </button>
+
+          <button 
+            onClick={() => setActiveTab('market')}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === 'market' ? 'bg-emerald-50 text-emerald-700 font-semibold' : 'text-gray-500 hover:bg-gray-50'}`}
+          >
+            <ShoppingCart size={20} /> <span className="hidden lg:block">ตลาดต้นกล้า</span>
+          </button>
+          <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-500 hover:bg-gray-50 transition-all">
+            <Bell size={20} /> <span className="hidden lg:block">การแจ้งเตือน</span>
+            <span className="ml-auto bg-red-500 text-white text-xs px-2 py-0.5 rounded-full hidden lg:block">2</span>
+          </button>
+          <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-500 hover:bg-gray-50 transition-all">
+            <User size={20} /> <span className="hidden lg:block">บัญชีของฉัน</span>
+          </button>
+        </nav>
+      </aside>
+
+      {/* Main Content */}
+      <main className="flex-1 ml-20 lg:ml-64 p-4 lg:p-8">
+        <header className="flex justify-between items-center mb-8">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-800">
+                {activeTab === 'overview' ? 'ยินดีต้อนรับ, เจ้าของสวน' : activeTab === 'market' ? 'ตลาดต้นกล้า' : activeTab === 'supplies' ? 'ร้านค้าวัสดุเกษตร' : 'รายละเอียดต้นไม้'}
+            </h1>
+            <p className="text-sm text-gray-500 mt-1">
+                {new Date().toLocaleDateString('th-TH', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+            </p>
+          </div>
+          <div className="flex items-center gap-4">
+            <div className="hidden md:flex items-center gap-2 bg-white px-4 py-2 rounded-full border border-gray-200 shadow-sm">
+                <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                <span className="text-xs font-medium text-gray-600">System Online</span>
+            </div>
+            <div className="w-10 h-10 bg-gray-200 rounded-full overflow-hidden border-2 border-white shadow-sm">
+               <User className="w-full h-full p-2 text-gray-400" />
+            </div>
+          </div>
+        </header>
+
+        {renderContent()}
+      </main>
+
+      {/* Modals */}
+      {showTransferModal && selectedTree && (
+        <TransferModal 
+          tree={selectedTree} 
+          onClose={() => setShowTransferModal(false)} 
+          onConfirm={handleTransfer} 
+        />
+      )}
+    </div>
+  );
+}
